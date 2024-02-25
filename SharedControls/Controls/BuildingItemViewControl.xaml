@@ -6,9 +6,15 @@
              xmlns:local="clr-namespace:Shared.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    
-    <StackPanel Orientation="Horizontal" x:Name="spItems" Margin="5">
-        <!-- Buttons will be added here dynamically -->
+    <StackPanel>
+        <StackPanel x:Name="spResult" Orientation="Horizontal" HorizontalAlignment="Stretch"
+                    Margin="5" Background="Fuchsia" AllowDrop="True" Drop="spDropZone_Drop">
+            <Button Content="Placeholder"/>
+            <!-- Dropped words will be arranged here -->
+        </StackPanel>
+
+        <StackPanel x:Name="spShuffledWords" Margin="15" AllowDrop="True" Orientation="Horizontal">
+            <!-- Words will be placed here at different angles -->
+        </StackPanel>
     </StackPanel>
-    
 </UserControl>

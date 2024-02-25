@@ -42,12 +42,12 @@ namespace Shared.Viewers
             foreach (BuildingItemViewControl buildingItemViewControl in spItems.Children)
             {
                 // Check if the user input matches one of the options
-                if (!buildingItemViewControl.IsCorrectlyArranged)
-                {
-                    CompletionStateChanged?.Invoke(_assignment, false);
-                    MessageBox.Show(Ru.Incorrect);
-                    return;
-                }
+                //if (!IsCorrectlyArranged)
+                //{
+                //    CompletionStateChanged?.Invoke(_assignment, false);
+                //    MessageBox.Show(Ru.Incorrect);
+                //    return;
+                //}
             }
 
             // Show a message if all inputs are correct
