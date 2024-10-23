@@ -31,12 +31,11 @@ jobs:
           vpk pack -u GGManager -v ${{ steps.get-manager-version.outputs.version }} -p publish-manager
 
      - name: Upload to FTP
-       uses: sebastianpopp/ftp-action@releases/v2
+       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
        with:
-        host: ${{ secrets.FTP_HOST }}
+        server: ${{ secrets.FTP_HOST }}
         port: 42021
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: publish-manager
-        remote-dir: /good-grades/manager
-        options: "--verbose --port 42021"
+        server-dir: /good-grades/manager
