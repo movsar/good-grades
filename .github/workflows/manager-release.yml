@@ -29,4 +29,13 @@ jobs:
        run: |
           dotnet tool install -g vpk
           vpk pack -u GGManager -v ${{ steps.get-manager-version.outputs.version }} -p publish-manager
-          vpk upload github --repoUrl https://github.com/movsar/good-grades --token ${{ secrets.AUTOMATION_TOKEN }} --publish --releaseName "GGManager ${{ steps.get-manager-version.outputs.version }}" --tag v${{ steps.get-manager-version.outputs.version }}m
+
+     - name: Upload to FTP
+       uses: sebastianpopp/ftp-action@v1.2.0
+       with:
+        host: ${{ secrets.FTP_HOST }}
+        port: 42021
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: publish-manager
+        remote-dir: /good-grades/manager
