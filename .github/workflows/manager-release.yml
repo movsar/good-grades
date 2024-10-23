@@ -39,3 +39,4 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: publish-manager
         remote-dir: /good-grades/manager
+        options: "--verbose --port 42021"
