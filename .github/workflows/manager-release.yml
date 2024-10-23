@@ -37,5 +37,5 @@ jobs:
         username: ftpuser_releases
         password:  a90djas90dj@9ss9a-=
         port: 42021
-        local-dir: publish-manager
-        server-dir: /good-grades/manager
+        local-dir: publish-manager/
+        server-dir: /good-grades/manager/
