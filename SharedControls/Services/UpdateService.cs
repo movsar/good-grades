@@ -14,7 +14,7 @@ namespace Shared.Services
         {
             try
             {
-                var mgr = new UpdateManager(releasesUrl);
+                var mgr = new UpdateManager(releasesUrl + "/RELEASES");
 
                 // Check for new version
                 var newVersion = await mgr.CheckForUpdatesAsync();

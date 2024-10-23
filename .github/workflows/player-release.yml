@@ -30,7 +30,7 @@ jobs:
           vpk pack -u GGPlayer -v ${{ steps.get-player-version.outputs.version }} -p publish-player
      
      - name: Upload to FTP
-       uses: sebastianpopp/ftp-action@v1.2.0
+       uses: sebastianpopp/ftp-action@releases/v2
        with:
         host: ${{ secrets.FTP_HOST }}
         port: 42021
