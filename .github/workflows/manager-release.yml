@@ -12,8 +12,11 @@ jobs:
      - name: Checkout Repository
        uses: actions/checkout@v4
 
-     - name: Install Rsync on Windows
-       run: choco install -y cwrsync
+     - name: Download and Install Rsync Manually
+       run: |
+            Invoke-WebRequest -Uri https://www.itefix.net/dl/cwrsync_6.2.4_x86_free.zip -OutFile rsync.zip
+            Expand-Archive rsync.zip -DestinationPath $env:USERPROFILE\rsync
+            $env:PATH += ";$env:USERPROFILE\rsync\cwRsync_6.2.4_x86_Free\bin"
        
      - name: Get Manager Version from Project File
        id: get-manager-version
