@@ -30,12 +30,13 @@ jobs:
           dotnet tool install -g vpk
           vpk pack -u GGManager -v ${{ steps.get-manager-version.outputs.version }} -p publish-manager
 
-     - name: Upload to FTP
-       uses: SamKirkland/web-deploy@v1
+     - name: Rsync deployments
+       uses: burnett01/rsync-deployments@7.0.1
        with:
-        ssh-port: 42022
-        private-ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        target-server: movsar.dev
-        remote-user: root
-        destination-path: ~/var/www/movsar.dev/releases/good-grades/manager/
-        source-path: publish-manager/Releases/
+        switches: -avzr --delete
+        path: publish-manager/Releases/
+        remote_path: /var/www/movsar.dev/releases/good-grades/manager/
+        remote_port: 42022
+        remote_host: movsar.dev
+        remote_user: root
+        remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
