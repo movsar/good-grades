@@ -17,13 +17,12 @@ jobs:
        shell: bash
        run: echo "version=$(grep -oE '<Version>[^<]+' GGManager/GGManager.csproj | sed 's/<Version>//')" >> $GITHUB_OUTPUT
   
-      - name: Install Rsync
-      - uses: GuillaumeFalourd/setup-rsync@v1.2
-        id: rsync
-        with:
-          ssh_key: ${{ secrets.MY_SSH_KEY }}
-      - run: echo "SSK KEY PATH ${{ steps.rsync.outputs.ssh_key_path }}"
-      - run: rsync --version
+     - uses: GuillaumeFalourd/setup-rsync@v1.2
+       id: rsync
+       with:
+          ssh_key: ${{ secrets.SSH_PRIVATE_KEY }}
+     - run: echo "SSK KEY PATH ${{ steps.rsync.outputs.ssh_key_path }}"
+     - run: rsync --version
   
      - name: Install .NET
        uses: actions/setup-dotnet@v4
