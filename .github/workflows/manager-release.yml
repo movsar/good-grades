@@ -1,4 +1,4 @@
-name: Deploy GGManager to GitHub Releases
+name: Deploy GGManager to Remote Server via SSH
 
 on:
   push:
@@ -6,37 +6,42 @@ on:
       - master
 
 jobs:
-  deploy-to-github-releases:
+  deploy:
     runs-on: windows-latest
     steps:
-     - name: Checkout Repository
-       uses: actions/checkout@v4
-       
-     - name: Get Manager Version from Project File
-       id: get-manager-version
-       shell: bash
-       run: echo "version=$(grep -oE '<Version>[^<]+' GGManager/GGManager.csproj | sed 's/<Version>//')" >> $GITHUB_OUTPUT
-  
-     - name: Install .NET
-       uses: actions/setup-dotnet@v4
-       with:
-         dotnet-version: 6.0.x
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-     - name: Publish GGManager
-       run: dotnet publish GGManager/GGManager.csproj -c Release -o publish-manager -r win-x86 -p:PublishReadyToRun=true
+      - name: Get Manager Version from Project File
+        id: get-manager-version
+        run: |
+          echo "Extracting version from GGManager.csproj"
+          VERSION=$(grep -oP '(?<=<Version>).*?(?=</Version>)' GGManager/GGManager.csproj)
+          echo "version=$VERSION" >> $GITHUB_ENV
+      
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
 
-     - name: Create release
-       run: |
-          dotnet tool install -g vpk
-          vpk pack -u GGManager -v ${{ steps.get-manager-version.outputs.version }} -p publish-manager
+      - name: Publish GGManager
+        run: dotnet publish GGManager/GGManager.csproj -c Release -o publish-manager -r win-x86 -p:PublishReadyToRun=true
 
-     - name: Rsync deployments
-       uses: burnett01/rsync-deployments@7.0.1
-       with:
-        switches: -avzr --delete
-        path: publish-manager/Releases/
-        remote_path: /var/www/movsar.dev/releases/good-grades/manager/
-        remote_port: 42022
-        remote_host: movsar.dev
-        remote_user: root
-        remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Install Velopack Tool
+        run: dotnet tool install -g vpk
+
+      - name: Pack with Velopack
+        run: vpk pack -u GGManager -v ${{ env.version }} -p publish-manager
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.10.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy via Rsync
+        run: |
+          echo "Deploying files to remote server..."
+          rsync -avzr --delete \
+          publish-manager/Releases/ \
+          root@movsar.dev:/var/www/movsar.dev/releases/good-grades/manager/ \
+          -e 'ssh -p 42022'
