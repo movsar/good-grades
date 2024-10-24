@@ -19,8 +19,6 @@ jobs:
   
      - uses: GuillaumeFalourd/setup-rsync@v1.2
        id: rsync
-       with:
-          ssh_key: ${{ secrets.SSH_PRIVATE_KEY }}
      - run: echo "SSK KEY PATH ${{ steps.rsync.outputs.ssh_key_path }}"
      - run: rsync --version
   
