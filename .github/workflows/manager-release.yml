@@ -1,4 +1,4 @@
-name: Deploy GGManager to Remote Server via SSH
+name: Deploy GGManager to GitHub Releases
 
 on:
   push:
@@ -6,22 +6,24 @@ on:
       - master
 
 jobs:
-  deploy:
+  deploy-to-github-releases:
     runs-on: windows-latest
     steps:
      - name: Checkout Repository
        uses: actions/checkout@v4
-
-     - name: Download and Install Rsync Manually
-       run: |
-            Invoke-WebRequest -Uri https://www.itefix.net/dl/cwrsync_6.2.4_x86_free.zip -OutFile rsync.zip
-            Expand-Archive rsync.zip -DestinationPath $env:USERPROFILE\rsync
-            $env:PATH += ";$env:USERPROFILE\rsync\cwRsync_6.2.4_x86_Free\bin"
        
      - name: Get Manager Version from Project File
        id: get-manager-version
        shell: bash
        run: echo "version=$(grep -oE '<Version>[^<]+' GGManager/GGManager.csproj | sed 's/<Version>//')" >> $GITHUB_OUTPUT
+  
+      - name: Install Rsync
+      - uses: GuillaumeFalourd/setup-rsync@v1.2
+        id: rsync
+        with:
+          ssh_key: ${{ secrets.MY_SSH_KEY }}
+      - run: echo "SSK KEY PATH ${{ steps.rsync.outputs.ssh_key_path }}"
+      - run: rsync --version
   
      - name: Install .NET
        uses: actions/setup-dotnet@v4
@@ -36,15 +38,12 @@ jobs:
           dotnet tool install -g vpk
           vpk pack -u GGManager -v ${{ steps.get-manager-version.outputs.version }} -p publish-manager
 
-     - name: Set up SSH agent
-       uses: webfactory/ssh-agent@v0.9.0
+     - name: Upload to FTP
+       uses: SamKirkland/web-deploy@v1
        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-     - name: Deploy via Rsync
-       run: |
-          echo "Deploying files to remote server..."
-          rsync -avzr --delete \
-          publish-manager/Releases/ \
-          root@movsar.dev:/var/www/movsar.dev/releases/good-grades/manager/ \
-          -e 'ssh -p 42022'
+        ssh-port: 42022
+        private-ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        target-server: movsar.dev
+        remote-user: root
+        destination-path: ~/var/www/movsar.dev/releases/good-grades/manager/
+        source-path: publish-manager/Releases/
