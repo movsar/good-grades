@@ -34,7 +34,7 @@ jobs:
         run: vpk pack -u GGManager -v ${{ env.version }} -p publish-manager
 
       - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.10.4
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
