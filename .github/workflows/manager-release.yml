@@ -28,14 +28,13 @@ jobs:
      - name: Create release
        run: |
           dotnet tool install -g vpk
-          vpk pack -u GGManager -v ${{ steps.get-manager-version.outputs.version }} -p publish-manager
+          vpk pack -u GGManager -v ${{ steps.get-manager-version.outputs.version }} -p publish-manager-package
 
      - name: Upload to FTP
-       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+       uses: SamKirkland/web-deploy@v1
        with:
-        server: ftp.movsar.dev
-        username: ftpuser_releases
-        password:  a90djas90dj@9ss9a-=
-        port: 42021
-        local-dir: publish-manager/
-        server-dir: /good-grades/manager/
+        target-server: movsar.dev
+        remote-user: root
+        private-ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        destination-path: ~/var/www/movsar.dev/releases/good-grades/manager/
+        source-path: publish-manager-package/
