@@ -33,8 +33,9 @@ jobs:
      - name: Upload to FTP
        uses: SamKirkland/web-deploy@v1
        with:
+        ssh-port: 42022
+        private-ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
         target-server: movsar.dev
         remote-user: root
-        private-ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
         destination-path: ~/var/www/movsar.dev/releases/good-grades/manager/
-        source-path: publish-manager/Releases
+        source-path: publish-manager/Releases/
