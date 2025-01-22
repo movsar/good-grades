@@ -5,6 +5,8 @@ using System.Windows.Input;
 using Data.Services;
 using System.Collections.ObjectModel;
 using GGPlayer.Services;
+using System.ComponentModel;
+using System.Windows.Data;
 
 namespace GGPlayer.Pages
 {
@@ -46,6 +48,7 @@ namespace GGPlayer.Pages
 
             // Intialize the visual elements
             InitializeComponent();
+            SortListView();
         }
 
         private void NavigateToSelectedSegment()
@@ -82,6 +85,16 @@ namespace GGPlayer.Pages
         //    Segments.Clear();
         //    LoadDatabase(false);
         //}
+
+        private void SortListView()
+        {
+            if (lvSegments.ItemsSource != null)
+            {
+                ICollectionView view = CollectionViewSource.GetDefaultView(lvSegments.ItemsSource);
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("Order", ListSortDirection.Ascending));
+            }
+        }
 
     }
 }
