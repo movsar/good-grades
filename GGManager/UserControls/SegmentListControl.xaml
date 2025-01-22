@@ -10,23 +10,39 @@
     <DockPanel Background="WhiteSmoke">
 
         <DockPanel.InputBindings>
-            <KeyBinding Key="Delete" Command="{Binding DeleteSelectedSegment}"></KeyBinding>
+            <KeyBinding Key="Delete" Command="{Binding DeleteSelectedSegment}" />
         </DockPanel.InputBindings>
 
         <ListView x:Name="lvSegments" 
-                  BorderThickness="0"
-                  DockPanel.Dock="Top"
-                  SelectionMode="Single"
-                  SelectionChanged="lvSegments_SelectionChanged">
+          BorderThickness="0"
+          DockPanel.Dock="Top"
+          SelectionMode="Single"
+          SelectionChanged="lvSegments_SelectionChanged"
+          PreviewMouseLeftButtonDown="lvSegments_PreviewMouseLeftButtonDown"
+          DragOver="lvSegments_DragOver"
+          Drop="lvSegments_Drop"
+          DragLeave="lvSegments_DragLeave">
 
+            <ListView.Resources>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="AllowDrop" Value="True"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="LightBlue"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.Resources>
             <ListView.ContextMenu>
                 <ContextMenu>
                     <MenuItem
-                            Header="{x:Static shared:GgLocalization.Delete}"
-                            Command="{Binding DeleteSelectedSegment}"
-                            CommandParameter="{Binding}"/>
+                Header="{x:Static shared:GgLocalization.Delete}"
+                Command="{Binding DeleteSelectedSegment}"
+                CommandParameter="{Binding}"/>
                 </ContextMenu>
             </ListView.ContextMenu>
+
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Title}" Width="180px" />
@@ -38,8 +54,6 @@
                 Name="BtnNewSection"
                 Click="BtnNewSection_Click"
                 VerticalAlignment="Bottom"
-                Cursor="Hand"
-                />
-
+                Cursor="Hand" />
     </DockPanel>
 </UserControl>
