@@ -26,8 +26,22 @@ namespace Data
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message, ex.Source, ex.StackTrace, ex.InnerException);
-                throw;
+                if (ex.Message.Contains("already exists"))
+                {
+                    string query = @"INSERT INTO __EFMigrationsHistory 
+                                            (MigrationId, ProductVersion)
+                                            VALUES ('{0}', '{1}')";
+
+                    var query1 = string.Format(query, "20250118175903_Initial", "6.0.0");
+
+                    DbContext.Database.ExecuteSqlRawAsync(query1);
+                    DbContext.Database.Migrate();
+                }
+                else
+                {
+                    _logger.LogCritical(ex.Message, ex.Source, ex.StackTrace, ex.InnerException);
+                    throw;
+                }
             }
 
             _databasePath = databasePath;
@@ -62,7 +76,14 @@ namespace Data
         {
             try
             {
-                DbContext.Database.EnsureDeleted();
+                if (DbContext == null || DbContext.Database == null)
+                {
+                    File.Delete(dbPath);
+                }
+                else
+                {
+                    DbContext.Database.EnsureDeleted();
+                }
             }
             catch (Exception ex)
             {
