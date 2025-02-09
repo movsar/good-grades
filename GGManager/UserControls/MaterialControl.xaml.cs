@@ -13,6 +13,7 @@ using Shared.Services;
 using System.Windows.Input;
 using Shared.Controls;
 using Plugin.SimpleAudioPlayer;
+using System.Windows.Media;
 
 namespace GGManager.UserControls
 {
@@ -21,6 +22,7 @@ namespace GGManager.UserControls
 
         #region Properties
         private FormCompletionInfo _formCompletionInfo;
+        private static MaterialControl? _draggedMaterial;
         static string TitleHintText { get; } = Translations.GetValue("SetMaterialTitle");
         ContentStore ContentStore => App.AppHost!.Services.GetRequiredService<ContentStore>();
         StylingService StylingService => App.AppHost!.Services.GetRequiredService<StylingService>();
@@ -269,5 +271,71 @@ namespace GGManager.UserControls
         }
         #endregion
 
+        private void btnDrag_Drop(object sender, DragEventArgs e)
+        {
+            if (_draggedMaterial == null || this == _draggedMaterial) return;
+
+            var parentPanel = FindParent<StackPanel>();
+            if (parentPanel == null) return;
+
+            int draggedIndex = parentPanel.Children.IndexOf(_draggedMaterial);
+            int targetIndex = parentPanel.Children.IndexOf(this);
+
+            if (draggedIndex != targetIndex && draggedIndex >= 0 && targetIndex >= 0)
+            {
+                SwapMaterials(draggedIndex, targetIndex, parentPanel);
+                UpdateOrderIndexes(parentPanel);
+            }
+
+            ContentStore.DbContext.SaveChanges();
+        }
+
+        private void btnDrag_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.Move;
+        }
+
+        private void btnDrag_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _draggedMaterial = this;
+            DragDrop.DoDragDrop(btnDrag, this, DragDropEffects.Move);
+        }
+
+        private void SwapMaterials(int draggedIndex, int targetIndex, StackPanel panel)
+        {
+            var draggedElement = panel.Children[draggedIndex];
+            panel.Children.RemoveAt(draggedIndex);
+            panel.Children.Insert(targetIndex, draggedElement);
+        }
+
+        private void UpdateOrderIndexes(StackPanel panel)
+        {
+            var materials = ContentStore.SelectedSegment!.Materials.ToList();
+
+            for (int i = 0; i < panel.Children.Count; i++)
+            {
+                if (panel.Children[i] is MaterialControl materialControl)
+                {
+                    var material = materials.FirstOrDefault(m => m.Id == materialControl.Id);
+                    if (material != null)
+                    {
+                        material.Order = i;
+                        ContentStore.DbContext.Update(material);
+                    }
+                }
+            }
+
+            ContentStore.DbContext.SaveChanges();
+        }
+
+        private T? FindParent<T>() where T : DependencyObject
+        {
+            DependencyObject parent = VisualTreeHelper.GetParent(this);
+            while (parent != null && parent is not T)
+            {
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return parent as T;
+        }
     }
 }

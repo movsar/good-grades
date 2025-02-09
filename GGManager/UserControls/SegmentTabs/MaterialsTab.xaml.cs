@@ -2,6 +2,7 @@
 using Data.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows.Controls;
+using System.Linq;
 
 namespace GGManager.UserControls.SegmentTabs
 {
@@ -25,20 +26,14 @@ namespace GGManager.UserControls.SegmentTabs
         {
             spListeningControls.Children.Clear();
 
-            if (ContentStore.SelectedSegment == null)
-            {
-                return;
-            }
-            //добавление существующих материалов сегмента в интерфейс
-            foreach (var material in ContentStore.SelectedSegment!.Materials)
-            {
-                var existingMaterial = new MaterialControl(material);
-                spListeningControls.Children.Add(existingMaterial);
-            }
-            //добавление пустого поля для создания нового материала
-            var newMaterial = new MaterialControl();
+            if (ContentStore.SelectedSegment == null) return;
 
-            spListeningControls.Children.Add(newMaterial);
+            foreach (var material in ContentStore.SelectedSegment.Materials.OrderBy(m => m.Order))
+            {
+                spListeningControls.Children.Add(new MaterialControl(material));
+            }
+
+            spListeningControls.Children.Add(new MaterialControl());
         }
 
         private void ContentStore_ItemChanged(IEntityBase entity)
