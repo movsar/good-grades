@@ -15,11 +15,12 @@ using System.Windows;
 using System.Windows.Controls;
 using Shared;
 using Shared.Controls.Assignments;
-using Serilog.Filters;
 using Shared.Interfaces;
 using Shared.Controls;
 using System.Windows.Media;
 using Shared.Utilities;
+using System.Windows.Input;
+using System.Diagnostics;
 
 namespace GGManager.UserControls
 {
@@ -28,6 +29,7 @@ namespace GGManager.UserControls
         #region Properties and Fields
         private FormCompletionInfo _formCompletionInfo;
         private AssignmentType _taskType;
+        private static AssignmentControl? _draggedAssignment;
         ContentStore ContentStore => App.AppHost!.Services.GetRequiredService<ContentStore>();
         StylingService StylingService => App.AppHost!.Services.GetRequiredService<StylingService>();
 
@@ -283,5 +285,79 @@ namespace GGManager.UserControls
                 throw new Exception("No matching TaskType has been found");
             }
         }
+        #region Drag and Drop
+        private void btnDrag_Drop(object sender, DragEventArgs e)
+        {
+            if (_draggedAssignment == null || this == _draggedAssignment) return;
+
+            var parentPanel = FindParent<StackPanel>();
+            if (parentPanel == null) return;
+
+            int draggedIndex = parentPanel.Children.IndexOf(_draggedAssignment);
+            int targetIndex = parentPanel.Children.IndexOf(this);
+
+            if (draggedIndex != targetIndex && draggedIndex >= 0 && targetIndex >= 0)
+            {
+                // Меняем местами два задания
+                SwapAssignments(draggedIndex, targetIndex, parentPanel);
+
+                // Обновляем индексы всех элементов
+                UpdateOrderIndexes(parentPanel);
+            }
+
+            ContentStore.DbContext.SaveChanges();
+            Debug.WriteLine("Сейв сработал");
+        }
+
+        // Метод для обмена местами двух заданий
+        private void SwapAssignments(int draggedIndex, int targetIndex, StackPanel panel)
+        {
+            var draggedElement = panel.Children[draggedIndex];
+            panel.Children.RemoveAt(draggedIndex);
+            panel.Children.Insert(targetIndex, draggedElement);
+            var targetElement = panel.Children[targetIndex + (targetIndex < draggedIndex ? 1 : -1)];
+            panel.Children.Remove(targetElement);
+            panel.Children.Insert(draggedIndex, targetElement);
+        }
+
+        // Метод для обновления индексов
+        private void UpdateOrderIndexes(StackPanel panel)
+        {
+            int index = 0;
+            foreach (var child in panel.Children.OfType<AssignmentControl>())
+            {
+                if (child._assignment != null)
+                {
+                    var assignment = child._assignment;
+                    assignment.Order = index++;
+                    ContentStore.DbContext.Update(assignment);
+                }
+            }
+        }
+
+
+        private void btnDrag_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.Move;
+        }
+
+        private void btnDrag_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _draggedAssignment = this;
+            DragDrop.DoDragDrop(btnDrag, this, DragDropEffects.Move);
+        }
+
+        private T? FindParent<T>() where T : DependencyObject
+        {
+            DependencyObject parent = VisualTreeHelper.GetParent(this);
+            while (parent != null && parent is not T)
+            {
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return parent as T;
+        }
     }
 }
+#endregion
+
+

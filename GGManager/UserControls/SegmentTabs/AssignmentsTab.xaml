@@ -12,7 +12,7 @@
                    FontWeight="Bold">Выберите тип заданий и укажите необходимые данные</TextBlock>
 
         <ScrollViewer>
-            <StackPanel Margin="0 20 0 0" x:Name="spTaskAssignmentControls"></StackPanel>
+            <StackPanel Margin="0 20 0 0" x:Name="spTaskAssignmentControls" AllowDrop="True"></StackPanel>
         </ScrollViewer>
     </Grid>
 </UserControl>

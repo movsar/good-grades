@@ -5,12 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:GGManager.UserControls"
              xmlns:shared="clr-namespace:Shared;assembly=Shared"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <StackPanel Margin="0 10 0 0" Orientation="Horizontal">
+            <Button x:Name="btnDrag" Content="☰" Height="25" Drop="btnDrag_Drop" DragOver="btnDrag_DragOver" PreviewMouseLeftButtonDown="btnDrag_PreviewMouseLeftButtonDown"/>
             <Border BorderBrush="Gray" BorderThickness="1" Padding="0, 0, 0, 0">
-                <StackPanel Orientation="Vertical" MaxWidth="300">
+                <StackPanel Orientation="Vertical" MaxWidth="300" AllowDrop="True">
                     <ComboBox x:Name="cmbTaskType"
                           FontSize="16"
                           Margin="0 0 0 0"
