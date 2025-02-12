@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
+using System;
+using System.Diagnostics;
 
 namespace GGManager.UserControls.SegmentTabs
 {
@@ -36,16 +38,16 @@ namespace GGManager.UserControls.SegmentTabs
             allTasks.AddRange(ContentStore.SelectedSegment!.BuildingAssignments);
             allTasks.AddRange(ContentStore.SelectedSegment!.TestingAssignments);
             allTasks.AddRange(ContentStore.SelectedSegment!.SelectionAssignments);
-            
-            //добавление заданий в интерффейс
-            foreach (var material in allTasks.OrderBy(t => t.CreatedAt))
+
+            // Добавляем задания в интерфейс
+            foreach (var material in allTasks.OrderBy(t => t.Order).ToList()) 
             {
                 spTaskAssignmentControls.Children.Add(new AssignmentControl(material));
             }
 
             //создание пустого поля для нового задания
             var newMaterial = new AssignmentControl();
-
+            
             spTaskAssignmentControls.Children.Add(newMaterial);
         }
 

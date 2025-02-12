@@ -12,7 +12,7 @@
         <TextBlock Margin="10 5 10 0"
                    FontWeight="Bold" Text="{x:Static shared:GgLocalization.SetTitleAndDataForListeningMaterial}" />
         <ScrollViewer>
-            <StackPanel Margin="0 20 0 0" x:Name="spListeningControls"></StackPanel>
+            <StackPanel Margin="0 20 0 0" x:Name="spListeningControls" AllowDrop="True"></StackPanel>
         </ScrollViewer>
     </Grid>
 </UserControl>

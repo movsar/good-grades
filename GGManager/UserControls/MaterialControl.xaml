@@ -9,6 +9,7 @@
              x:Name="ucListeningMaterialControl">
     <Grid>
         <StackPanel Margin="0 10 0 0" Orientation="Horizontal" Height="30">
+            <Button x:Name="btnDrag" Content="☰" Height="25" VerticalAlignment="Center" Drop="btnDrag_Drop" DragOver="btnDrag_DragOver" PreviewMouseLeftButtonDown="btnDrag_PreviewMouseLeftButtonDown"/>
             <TextBox x:Name="txtTitle"
                      Margin="10 0 0 0" 
                      Padding="5 0 0 0"
