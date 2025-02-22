@@ -6,6 +6,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Shared.Controls;
 using GGPlayer.Services;
+using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace GGPlayer.Pages
 {
@@ -14,8 +16,7 @@ namespace GGPlayer.Pages
         private readonly ShellNavigationService _navigationService;
         private readonly AssignmentsPage _assignmentsPage;
         private readonly MaterialViewerPage _materialViewerPage;
-        public List<IMaterial> Materials { get; } = new List<IMaterial>();
-
+        public ObservableCollection<IMaterial> Materials { get; } = new();
         private Segment? _segment;
 
         public SegmentPage(ShellNavigationService navigationService,
@@ -32,23 +33,31 @@ namespace GGPlayer.Pages
 
         public void Initialize(Segment segment)
         {
-            _segment = segment;
-
-            RtfService.LoadRtfFromText(rtbDescription, segment.Description);
-            tbSegmentTitle.Text = segment.Title;
             if (segment == null)
             {
                 throw new ArgumentNullException(nameof(segment), "Segment cannot be null");
             }
-
             _segment = segment;
 
-            // Заполнение списка материалов
-            Materials.Clear();
-            if (segment.Materials != null)
+            if (!string.IsNullOrWhiteSpace(_segment.Description))
             {
-                Materials.AddRange(segment.Materials.Cast<IMaterial>());
+                RtfService.LoadRtfFromText(rtbDescription, _segment.Description);
             }
+
+            tbSegmentTitle.Text = _segment.Title;
+
+            // Заполнение списка материалов
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Materials.Clear();
+                if (_segment.Materials != null)
+                {
+                    foreach (var material in _segment.Materials.Cast<IMaterial>())
+                    {
+                        Materials.Add(material);
+                    }
+                }
+            });
 
             // Проверка наличия заданий и добавление кнопки
             var assignments = GetAllAssignments();

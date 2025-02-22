@@ -1,5 +1,6 @@
 ﻿using Data.Entities;
 using Data.Interfaces;
+using Serilog;
 using Shared.Interfaces;
 using Shared.Services;
 using System;
@@ -42,6 +43,12 @@ namespace Shared.Controls.Assignments
 
         private void LoadPreviousItem()
         {
+            if ((_currentQuestionIndex - 1) < (_questionViewControls.Count - 1))
+            {
+                Log.Error("Question view controls count was less than current item index");
+                return;
+            }
+
             ccQuestion.Content = _questionViewControls[--_currentQuestionIndex];
         }
 

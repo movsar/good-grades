@@ -1,5 +1,6 @@
 ﻿using Data.Entities;
 using Data.Interfaces;
+using Serilog;
 using Shared.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,12 @@ namespace Shared.Controls.Assignments
 
         private void LoadPreviousItem()
         {
+            if ((_currentItemIndex - 1) < (viewControls.Count - 1))
+            {
+                Log.Error("View Controls count was less than current item index");
+                return;
+            }
+
             spItems.Children.Clear();
             spItems.Children.Add(viewControls[--_currentItemIndex]);
         }
@@ -108,7 +115,7 @@ namespace Shared.Controls.Assignments
         {
             IsEnabled = true;
             _currentItemIndex = -1;
-         
+
             if (_assignment == assignment)
             {
                 return;
