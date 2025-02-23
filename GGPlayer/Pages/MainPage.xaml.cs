@@ -35,8 +35,11 @@ namespace GGPlayer.Pages
 
         public void Initialize()
         {
+            // Intialize the visual elements
+            InitializeComponent();
+
             // Load Segments into the collection view
-            foreach (var segment in _storage.DbContext.Segments)
+            foreach (var segment in _storage.DbContext.Segments.OrderBy(s => s.Order))
             {
                 Segments.Add(segment);
             };
@@ -45,10 +48,6 @@ namespace GGPlayer.Pages
             _dbInfo = _storage.DbContext.DbMetas.First();
             DbTitle = _dbInfo.Title;
             DbDescription = _dbInfo.Description ?? string.Empty;
-
-            // Intialize the visual elements
-            InitializeComponent();
-            SortListView();
         }
 
         private void NavigateToSelectedSegment()
@@ -85,16 +84,5 @@ namespace GGPlayer.Pages
         //    Segments.Clear();
         //    LoadDatabase(false);
         //}
-
-        private void SortListView()
-        {
-            if (lvSegments.ItemsSource != null)
-            {
-                ICollectionView view = CollectionViewSource.GetDefaultView(lvSegments.ItemsSource);
-                view.SortDescriptions.Clear();
-                view.SortDescriptions.Add(new SortDescription("Order", ListSortDirection.Ascending));
-            }
-        }
-
     }
 }
