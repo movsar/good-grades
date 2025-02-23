@@ -12,7 +12,7 @@ namespace Shared.Controls.Assignments
     public partial class BuildingAssignmentControl : UserControl, IAssignmentControl
     {
 
-        private BuildingAssignment _assignment;
+        private BuildingAssignment _assignment; 
         private int _currentItemIndex;
 
         public event Action<IAssignment, bool> AssignmentCompleted;
