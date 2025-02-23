@@ -100,7 +100,7 @@ namespace GGPlayer.Pages
         private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
         {
             AboutWindow aboutWindow = new AboutWindow();
-            aboutWindow.Show();
+            aboutWindow.ShowDialog();
         }
 
         private void CloseProgram_Click(object sender, RoutedEventArgs e)
