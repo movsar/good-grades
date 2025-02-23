@@ -55,6 +55,7 @@ namespace GGManager.UserControls.SegmentTabs
             _contentStore.SelectedSegment!.Title = Title;
             _contentStore.SelectedSegment!.Description = RtfService.GetRtfDescriptionAsText(rtbDescription);
             _contentStore.DbContext.SaveChanges();
+            _contentStore.RaiseSegmentUpdatedEvent(_contentStore.SelectedSegment);
         }
 
         #region Event Handler
@@ -71,6 +72,6 @@ namespace GGManager.UserControls.SegmentTabs
         }
         #endregion
 
-      
+
     }
 }

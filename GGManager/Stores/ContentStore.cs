@@ -40,6 +40,7 @@ namespace GGManager.Stores
 
         public event Action? CurrentDatabaseChanged;
         public event Action<Segment>? SelectedSegmentChanged;
+        public event Action<Segment>? SegmentUpdated;
 
         public event Action<IEntityBase>? ItemAdded;
         public event Action<IEntityBase>? ItemUpdated;
@@ -88,6 +89,10 @@ namespace GGManager.Stores
         internal void RaiseItemAddedEvent(IEntityBase entity)
         {
             ItemAdded?.Invoke(entity);
+        }
+        internal void RaiseSegmentUpdatedEvent(Segment segment)
+        {
+            SegmentUpdated?.Invoke(segment);
         }
         internal void SetDbMeta()
         {

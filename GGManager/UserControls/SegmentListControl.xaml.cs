@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Shared;
+using System;
 
 namespace GGManager.UserControls
 {
@@ -30,6 +31,13 @@ namespace GGManager.UserControls
             _contentStore.ItemDeleted += OnItemDeleted;
             _contentStore.ItemUpdated += OnItemUpdated;
             _contentStore.CurrentDatabaseChanged += _contentStore_CurrentDatabaseChanged;
+            _contentStore.SegmentUpdated += _contentStore_SegmentUpdated; ;
+        }
+
+        private void _contentStore_SegmentUpdated(Segment segment)
+        {
+            RedrawSegmentList();
+            _contentStore.SelectedSegment = segment;
         }
 
         private void _contentStore_CurrentDatabaseChanged()
@@ -92,6 +100,7 @@ namespace GGManager.UserControls
         #region Drag-and-Drop
 
         private ListViewItem? _lastHighlightedItem;  // Track last highlighted item
+        private Point _dragStartPoint;
 
         // Start drag operation when clicking an item
         private void lvSegments_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -101,10 +110,13 @@ namespace GGManager.UserControls
             var listViewItem = FindAncestor<ListViewItem>(source);
             if (listViewItem == null) return;
 
-            _draggedSegment = listViewItem.Content as Segment;
-            if (_draggedSegment == null) return;  // Prevent dragging null items
+            // Ensure the item is selected before drag starts
+            if (!listViewItem.IsSelected)
+            {
+                listViewItem.IsSelected = true;
+            }
 
-            DragDrop.DoDragDrop(lvSegments, _draggedSegment, DragDropEffects.Move);
+            _dragStartPoint = e.GetPosition(null);
         }
 
         // Handle drop and swap items
@@ -115,13 +127,14 @@ namespace GGManager.UserControls
             if (e.OriginalSource is DependencyObject source)
             {
                 var targetItem = FindAncestor<ListViewItem>(source);
-                if (targetItem == null || targetItem.Content == _draggedSegment) return;  // Prevent dropping on itself
+                if (targetItem == null || targetItem.Content == _draggedSegment) return;
 
                 var targetSegment = targetItem.Content as Segment;
                 if (targetSegment != null)
                 {
                     SwapOrders(_draggedSegment, targetSegment);
                     RedrawSegmentList();
+                    _contentStore.SelectedSegment = _draggedSegment;
                 }
             }
 
@@ -135,6 +148,28 @@ namespace GGManager.UserControls
             ResetHighlight();
         }
 
+        private void lvSegments_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed) return;
+
+            var currentPos = e.GetPosition(null);
+            if (Math.Abs(currentPos.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+                Math.Abs(currentPos.Y - _dragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+            {
+                // Ignore small movements (not a drag)
+                return;
+            }
+
+            var listViewItem = FindAncestor<ListViewItem>(e.OriginalSource as DependencyObject);
+            if (listViewItem == null || !listViewItem.IsSelected) return;
+
+            _draggedSegment = listViewItem.Content as Segment;
+            if (_draggedSegment == null) return;
+
+            DragDrop.DoDragDrop(lvSegments, _draggedSegment, DragDropEffects.Move);
+        }
+        #endregion
+
         // Swap the order of two segments in the database
         private void SwapOrders(Segment draggedSegment, Segment targetSegment)
         {
@@ -142,6 +177,16 @@ namespace GGManager.UserControls
             draggedSegment.Order = targetSegment.Order;
             targetSegment.Order = tempOrder;
             _contentStore.DbContext.SaveChanges();
+        }
+
+        // Reset the highlight of the last item
+        private void ResetHighlight()
+        {
+            if (_lastHighlightedItem != null)
+            {
+                _lastHighlightedItem.Background = Brushes.Transparent;
+                _lastHighlightedItem = null;
+            }
         }
 
         // Find ancestor of a given type in the visual tree
@@ -157,18 +202,6 @@ namespace GGManager.UserControls
 
             return null;
         }
-
-        // Reset the highlight of the last item
-        private void ResetHighlight()
-        {
-            if (_lastHighlightedItem != null)
-            {
-                _lastHighlightedItem.Background = Brushes.Transparent;
-                _lastHighlightedItem = null;
-            }
-        }
-        #endregion
-
         #region Segment Event Handlers
 
         private void OnItemUpdated(IEntityBase entity)
@@ -192,5 +225,7 @@ namespace GGManager.UserControls
         }
 
         #endregion
+
+
     }
 }
