@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GGManager.Windows" xmlns:usercontrols="clr-namespace:GGManager.UserControls"
-        mc:Ignorable="d"
+        mc:Ignorable="d"        
         xmlns:shared="clr-namespace:Shared;assembly=Shared"        
         Title="{x:Static shared:GgLocalization.DataBase}" Height="420" Width="580" ResizeMode="NoResize" MinHeight="250" MinWidth="450">
     

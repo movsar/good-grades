@@ -7,14 +7,19 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseWPF>true</UseWPF>
-		<Version>1.2.0</Version>
+		<Version>1.2.1</Version>
 		<StartupObject>GGPlayer.Program</StartupObject>
 		<Platforms>AnyCPU;x86</Platforms>
+		<ApplicationIcon>main.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <None Remove="Fonts\Amazing Grotesk Demi Italic.otf" />
 	  <None Remove="Fonts\TD Mars.otf" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="main.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
