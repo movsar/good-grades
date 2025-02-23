@@ -26,6 +26,7 @@ namespace Shared.Controls
             DataContext = this;
 
             Question = question;
+            lblQuestion.Text = question.Text;
             spOptions.Children.Clear();
             foreach (var option in Question.Options)
             {
@@ -66,7 +67,7 @@ namespace Shared.Controls
             else
             {
                 selectedOptionIds.Add(selectedId!);
-                selectedButton.BorderBrush= new SolidColorBrush(Color.FromArgb(255,60,127,177));
+                selectedButton.BorderBrush = new SolidColorBrush(Color.FromArgb(255, 60, 127, 177));
             }
         }
 

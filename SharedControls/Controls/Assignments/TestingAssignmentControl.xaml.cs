@@ -38,14 +38,18 @@ namespace Shared.Controls.Assignments
 
         private void LoadNextItem()
         {
+            if (_currentQuestionIndex == _questionViewControls.Count - 1)
+            {
+                return;
+            }
+
             ccQuestion.Content = _questionViewControls[++_currentQuestionIndex];
         }
 
         private void LoadPreviousItem()
         {
-            if ((_currentQuestionIndex - 1) < (_questionViewControls.Count - 1))
+            if (_currentQuestionIndex == 0)
             {
-                Log.Error("Question view controls count was less than current item index");
                 return;
             }
 
@@ -59,6 +63,7 @@ namespace Shared.Controls.Assignments
             {
                 control.ResetSelections();
             }
+
             LoadNextItem();
         }
 

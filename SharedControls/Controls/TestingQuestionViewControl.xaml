@@ -7,7 +7,7 @@
              d:DataContext="{d:DesignInstance Type=local:TestingQuestionViewControl}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    
+
     <UserControl.Resources>
         <Style x:Key="QuestionOptionButtonStyle" TargetType="Button">
             <Setter Property="Margin" Value="5"/>
@@ -31,9 +31,13 @@
         </Style>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" 
-                    HorizontalScrollBarVisibility="Disabled">
-        <StackPanel x:Name="spOptions"></StackPanel>
-    </ScrollViewer>
+    <StackPanel>
+        <TextBlock x:Name="lblQuestion"/>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                      HorizontalScrollBarVisibility="Disabled">
+            <StackPanel x:Name="spOptions" MaxWidth="400"></StackPanel>
+        </ScrollViewer>
+    </StackPanel>
 
 </UserControl>

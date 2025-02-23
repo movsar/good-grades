@@ -32,6 +32,8 @@ namespace Shared.Controls
             _assignment = assignment;
             _isAssignmentCompleted = false;
 
+            tbTitle.Text = _assignment.Title;
+
             switch (_assignment)
             {
                 case MatchingAssignment:
@@ -122,31 +124,9 @@ namespace Shared.Controls
         }
 
 
-
-        private string GetAssignmentTitle()
-        {
-            if (_assignment is not TestingAssignment)
-            {
-                return _assignment.Title;
-            }
-            else
-            {
-                var testingAssignment = _assignment as TestingAssignment;
-                var sb = new StringBuilder();
-                sb.Append(_currentStep);
-                sb.Append(" / ");
-                sb.Append(testingAssignment.Questions.Count);
-                sb.Append(" ");
-                sb.Append(testingAssignment.Questions[_currentStep - 1].Text);
-                return sb.ToString();
-            }
-        }
-
         #region UI states
         private void SetUiStateToReady()
         {
-            tbTitle.Text = GetAssignmentTitle();
-
             btnRetry.Visibility = Visibility.Collapsed;
 
             if (_currentStep >= _userControl.StepsCount)

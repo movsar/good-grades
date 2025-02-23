@@ -29,15 +29,19 @@ namespace Shared.Controls.Assignments
 
         private void LoadNextItem()
         {
+            if (_currentItemIndex == viewControls.Count - 1)
+            {
+                return;
+            }
+
             spItems.Children.Clear();
             spItems.Children.Add(viewControls[++_currentItemIndex]);
         }
 
         private void LoadPreviousItem()
         {
-            if ((_currentItemIndex - 1) < (viewControls.Count - 1))
+            if (_currentItemIndex == 0)
             {
-                Log.Error("View Controls count was less than current item index");
                 return;
             }
 
