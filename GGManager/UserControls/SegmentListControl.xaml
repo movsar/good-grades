@@ -21,7 +21,6 @@
             SelectionChanged="lvSegments_SelectionChanged"
             PreviewMouseLeftButtonDown="lvSegments_PreviewMouseLeftButtonDown"
             AllowDrop="True"
-            DragOver="lvSegments_DragOver"
             Drop="lvSegments_Drop"
             DragLeave="lvSegments_DragLeave">
 

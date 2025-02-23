@@ -91,7 +91,9 @@ namespace GGManager.UserControls
 
         #region Drag-and-Drop
 
-        // клик по элементу списка для начала перетаскивания
+        private ListViewItem? _lastHighlightedItem;  // Track last highlighted item
+
+        // Start drag operation when clicking an item
         private void lvSegments_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.OriginalSource is not DependencyObject source) return;
@@ -99,46 +101,13 @@ namespace GGManager.UserControls
             var listViewItem = FindAncestor<ListViewItem>(source);
             if (listViewItem == null) return;
 
-            _draggedSegment = (Segment?)listViewItem.Content;
-            if (_draggedSegment != null)
-            {
-                DragDrop.DoDragDrop(lvSegments, _draggedSegment, DragDropEffects.Move);
-            }
+            _draggedSegment = listViewItem.Content as Segment;
+            if (_draggedSegment == null) return;  // Prevent dragging null items
+
+            DragDrop.DoDragDrop(lvSegments, _draggedSegment, DragDropEffects.Move);
         }
 
-        //событие перетаскивания поверх элементов в списке
-        private void lvSegments_DragOver(object sender, DragEventArgs e)
-        {
-            if (_draggedSegment == null) return;
-
-            e.Effects = DragDropEffects.Move;
-
-            // Подсвечиваем элемент, на который наведена мышь
-            if (e.OriginalSource is DependencyObject source)
-            {
-                var targetItem = FindAncestor<ListViewItem>(source);
-                if (targetItem != null)
-                {
-                    targetItem.Background = Brushes.LightBlue;
-                }
-            }
-        }
-
-        //событие, когда мышь покидает элемент
-        private void lvSegments_DragLeave(object sender, DragEventArgs e)
-        {
-            // Убираем подсветку с элемента, с которого ушла мышь
-            if (e.OriginalSource is DependencyObject source)
-            {
-                var targetItem = FindAncestor<ListViewItem>(source);
-                if (targetItem != null)
-                {
-                    targetItem.Background = Brushes.Transparent;
-                }
-            }
-        }
-
-        //событие завершения перетаскивания
+        // Handle drop and swap items
         private void lvSegments_Drop(object sender, DragEventArgs e)
         {
             if (_draggedSegment == null) return;
@@ -146,20 +115,27 @@ namespace GGManager.UserControls
             if (e.OriginalSource is DependencyObject source)
             {
                 var targetItem = FindAncestor<ListViewItem>(source);
-                if (targetItem != null)
+                if (targetItem == null || targetItem.Content == _draggedSegment) return;  // Prevent dropping on itself
+
+                var targetSegment = targetItem.Content as Segment;
+                if (targetSegment != null)
                 {
-                    var targetSegment = (Segment?)targetItem.Content;
-                    if (targetSegment != null && targetSegment != _draggedSegment)
-                    {
-                        SwapOrders(_draggedSegment, targetSegment);
-                        RedrawSegmentList();
-                    }
+                    SwapOrders(_draggedSegment, targetSegment);
+                    RedrawSegmentList();
                 }
             }
-            _draggedSegment = null; 
+
+            ResetHighlight();
+            _draggedSegment = null;
         }
 
-        // Меняет порядок двух сегментов в базе данных
+        // Reset item background when dragging leaves
+        private void lvSegments_DragLeave(object sender, DragEventArgs e)
+        {
+            ResetHighlight();
+        }
+
+        // Swap the order of two segments in the database
         private void SwapOrders(Segment draggedSegment, Segment targetSegment)
         {
             int tempOrder = draggedSegment.Order;
@@ -168,7 +144,7 @@ namespace GGManager.UserControls
             _contentStore.DbContext.SaveChanges();
         }
 
-        // Находит родительский элемент заданного типа
+        // Find ancestor of a given type in the visual tree
         private static T? FindAncestor<T>(DependencyObject current) where T : DependencyObject
         {
             while (current != null)
@@ -182,7 +158,15 @@ namespace GGManager.UserControls
             return null;
         }
 
-
+        // Reset the highlight of the last item
+        private void ResetHighlight()
+        {
+            if (_lastHighlightedItem != null)
+            {
+                _lastHighlightedItem.Background = Brushes.Transparent;
+                _lastHighlightedItem = null;
+            }
+        }
         #endregion
 
         #region Segment Event Handlers
