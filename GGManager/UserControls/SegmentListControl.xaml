@@ -7,6 +7,7 @@
              xmlns:shared="clr-namespace:Shared;assembly=Shared"             
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    
     <DockPanel Background="WhiteSmoke">
 
         <DockPanel.InputBindings>
@@ -14,38 +15,27 @@
         </DockPanel.InputBindings>
 
         <ListView x:Name="lvSegments" 
-          BorderThickness="0"
-          DockPanel.Dock="Top"
-          SelectionMode="Single"
-          SelectionChanged="lvSegments_SelectionChanged"
-          PreviewMouseLeftButtonDown="lvSegments_PreviewMouseLeftButtonDown"
-          DragOver="lvSegments_DragOver"
-          Drop="lvSegments_Drop"
-          DragLeave="lvSegments_DragLeave">
+            BorderThickness="0"
+            DockPanel.Dock="Top"
+            SelectionMode="Single"
+            SelectionChanged="lvSegments_SelectionChanged"
+            PreviewMouseLeftButtonDown="lvSegments_PreviewMouseLeftButtonDown"
+            AllowDrop="True"
+            DragOver="lvSegments_DragOver"
+            Drop="lvSegments_Drop"
+            DragLeave="lvSegments_DragLeave">
 
-            <ListView.Resources>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="AllowDrop" Value="True"/>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="LightBlue"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </ListView.Resources>
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem
-                Header="{x:Static shared:GgLocalization.Delete}"
-                Command="{Binding DeleteSelectedSegment}"
-                CommandParameter="{Binding}"/>
+                    <MenuItem Header="{x:Static shared:GgLocalization.Delete}"
+                        Command="{Binding DeleteSelectedSegment}"
+                        CommandParameter="{Binding}"/>
                 </ContextMenu>
             </ListView.ContextMenu>
 
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Title}" Width="180px" />
+                    <TextBlock Text="{Binding Title}" Width="180px" TextTrimming="CharacterEllipsis" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
