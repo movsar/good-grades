@@ -24,12 +24,12 @@ using System.Diagnostics;
 
 namespace GGManager.UserControls
 {
-    public partial class AssignmentControl : UserControl
+    public partial class AssignmentsListItemControl : UserControl
     {
         #region Properties and Fields
         private FormCompletionInfo _formCompletionInfo;
         private AssignmentType _taskType;
-        private static AssignmentControl? _draggedAssignment;
+        private static AssignmentsListItemControl? _draggedAssignment;
         ContentStore ContentStore => App.AppHost!.Services.GetRequiredService<ContentStore>();
         StylingService StylingService => App.AppHost!.Services.GetRequiredService<StylingService>();
 
@@ -68,7 +68,7 @@ namespace GGManager.UserControls
             _formCompletionInfo.StatusChanged += OnFormStatusChanged;
         }
 
-        public AssignmentControl()
+        public AssignmentsListItemControl()
         {
             SharedInitialization();
 
@@ -76,7 +76,7 @@ namespace GGManager.UserControls
             SetUiForNewMaterial();
         }
 
-        public AssignmentControl(IAssignment taskMaterial)
+        public AssignmentsListItemControl(IAssignment taskMaterial)
         {
             _assignment = taskMaterial;
             IsContentSet = GetCurrentTaskItems().Count() > 0;
@@ -324,7 +324,7 @@ namespace GGManager.UserControls
         private void UpdateOrderIndexes(StackPanel panel)
         {
             int index = 0;
-            foreach (var child in panel.Children.OfType<AssignmentControl>())
+            foreach (var child in panel.Children.OfType<AssignmentsListItemControl>())
             {
                 if (child._assignment != null)
                 {

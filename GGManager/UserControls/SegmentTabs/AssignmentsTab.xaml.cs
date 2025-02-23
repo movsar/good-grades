@@ -42,11 +42,11 @@ namespace GGManager.UserControls.SegmentTabs
             // Добавляем задания в интерфейс
             foreach (var material in allTasks.OrderBy(t => t.Order).ToList()) 
             {
-                spTaskAssignmentControls.Children.Add(new AssignmentControl(material));
+                spTaskAssignmentControls.Children.Add(new AssignmentsListItemControl(material));
             }
 
             //создание пустого поля для нового задания
-            var newMaterial = new AssignmentControl();
+            var newMaterial = new AssignmentsListItemControl();
             
             spTaskAssignmentControls.Children.Add(newMaterial);
         }
