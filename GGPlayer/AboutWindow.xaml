@@ -1,12 +1,12 @@
 ﻿<Window x:Class="GGPlayer.AboutWindow"
-           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="О приложении" Height="300" Width="400"
+        xmlns:local="clr-namespace:GGPlayer"
+        Title="О приложении" Height="500" Width="800"
         >
     <Grid Margin="10">
         <StackPanel>
-            <TextBlock Text="Аннотация к приложению как к учебному пособию." TextWrapping="Wrap" Margin="0,0,0,10"/>
-            <TextBlock Text="Информация о разработчике, дикторе и т. д." TextWrapping="Wrap"/>
+            <TextBlock x:Name="tbMain" TextWrapping="Wrap" FontSize="18"/>
         </StackPanel>
     </Grid>
 </Window>

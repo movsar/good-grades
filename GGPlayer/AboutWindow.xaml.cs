@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Shared;
+using System.Windows;
 
 namespace GGPlayer
 {
@@ -7,6 +8,8 @@ namespace GGPlayer
         public AboutWindow()
         {
             InitializeComponent();
+
+            tbMain.Text = Constants.About;
         }
     }
 }
