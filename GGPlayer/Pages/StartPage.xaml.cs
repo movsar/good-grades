@@ -11,6 +11,7 @@ using System.IO;
 using GGPlayer.Services;
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 
 namespace GGPlayer.Pages
 {
@@ -59,7 +60,7 @@ namespace GGPlayer.Pages
 
             //открытие последней открытой БД
             _settingsService.SetValue("lastOpenedDatabasePath", dbAbsolutePath);
-            _storage.InitializeDbContext(dbAbsolutePath);
+            _storage.InitializeDbContext(dbAbsolutePath, false);
             btnGo.IsEnabled = true;
 
             // Set the background image for the class

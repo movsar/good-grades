@@ -1,9 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Serilog;
-using Shared.Services;
 using Shared.Utilities;
 using System;
-using System.Diagnostics;
 using System.IO;
 using Velopack;
 
@@ -20,7 +18,7 @@ namespace GGManager
             }
             string logPath = Path.Combine("logs", "logs.txt");
             Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Warning()
+            .MinimumLevel.Information()
             .WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
