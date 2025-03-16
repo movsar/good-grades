@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Shared.Services;
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -59,7 +60,7 @@ namespace GGManager.Stores
         {
             try
             {
-                _storage.InitializeDbContext(filePath);
+                _storage.InitializeDbContext(filePath, false);
                 _fileService.SetValue("lastOpenedDatabasePath", filePath);
                 CurrentDatabaseChanged?.Invoke();
             }
@@ -71,6 +72,10 @@ namespace GGManager.Stores
         }
         internal void CreateDatabase(string filePath)
         {
+            string? root = Path.GetDirectoryName(filePath);
+            string dataDirectoryName = Path.GetFileNameWithoutExtension(filePath);
+            Directory.CreateDirectory(Path.Combine(root, dataDirectoryName));
+            filePath = Path.Combine(root, dataDirectoryName, Path.GetFileName(filePath));
             _storage.CreateDatabase(filePath);
             OpenDatabase(filePath);
         }

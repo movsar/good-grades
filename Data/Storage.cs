@@ -19,7 +19,7 @@ namespace Data
             _logger = logger;
         }
 
-        public void InitializeDbContext(string databasePath)
+        public void InitializeDbContext(string databasePath, bool isNewDatabase)
         {
             try
             {
@@ -45,14 +45,17 @@ namespace Data
                     throw;
                 }
             }
-
             _databasePath = databasePath;
 
-            var currentDbVersion = DbContext.DbMetas.FirstOrDefault()?.DbVersion ?? 0;
-            if (currentDbVersion < 1)
+            // Migrate older versions to extract binary data stored in the database and write to disk
+            if (isNewDatabase == false)
             {
-                _logger.LogInformation("Migrating from older version");
-                MigrateFromOlderVersion(databasePath);
+                var currentDbVersion = DbContext.DbMetas.FirstOrDefault()?.DbVersion ?? 0;
+                if (currentDbVersion < 1)
+                {
+                    _logger.LogInformation("Migrating from older version");
+                    MigrateFromOlderVersion(databasePath);
+                }
             }
         }
         private string GetRandomFileName()
@@ -117,12 +120,16 @@ namespace Data
 
         public void CreateDatabase(string databasePath)
         {
+
             if (File.Exists(databasePath))
             {
                 DropDatabase(databasePath);
             }
 
-            InitializeDbContext(databasePath);
+            InitializeDbContext(databasePath, true);
+            var dbFileName = Path.GetFileName(databasePath);
+            var dbFileDir = Path.GetDirectoryName(databasePath);
+            var dbAssetsDir = Directory.CreateDirectory(Path.Combine(dbFileDir, dbFileName + "-assets"));
 
             SetDbMeta(databasePath);
 
