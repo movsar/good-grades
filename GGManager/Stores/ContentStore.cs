@@ -59,7 +59,7 @@ namespace GGManager.Stores
         {
             try
             {
-                _storage.SetDatabaseConfig(filePath);
+                _storage.InitializeDbContext(filePath);
                 _fileService.SetValue("lastOpenedDatabasePath", filePath);
                 CurrentDatabaseChanged?.Invoke();
             }

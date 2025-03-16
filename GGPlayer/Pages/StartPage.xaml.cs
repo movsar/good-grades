@@ -59,7 +59,7 @@ namespace GGPlayer.Pages
 
             //открытие последней открытой БД
             _settingsService.SetValue("lastOpenedDatabasePath", dbAbsolutePath);
-            _storage.SetDatabaseConfig(dbAbsolutePath);
+            _storage.InitializeDbContext(dbAbsolutePath);
             btnGo.IsEnabled = true;
 
             // Set the background image for the class
