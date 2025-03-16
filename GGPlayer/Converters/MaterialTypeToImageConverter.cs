@@ -17,7 +17,7 @@ namespace GGPlayer.Converters
                 case Material:
                     var m = material as Material;
                     // Если материал имеет аудиофайл, возвращаем изображение для аудио
-                    if (m.Audio != null)
+                    if (m.AudioPath != null)
                     {
                         return new BitmapImage(UriService.GetAbsoluteUri("/Images/listening.png", "Shared"));
                     }

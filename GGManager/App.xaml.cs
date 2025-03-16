@@ -12,6 +12,7 @@ using Data.Services;
 using Velopack;
 using Shared;
 using System.Threading;
+using Microsoft.EntityFrameworkCore;
 
 namespace GGManager
 {
@@ -91,7 +92,7 @@ namespace GGManager
                 AppHost!.StopAsync();
                 base.OnExit(e);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error(ex, "Error during OnExit");
             }

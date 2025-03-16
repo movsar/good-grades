@@ -1,13 +1,15 @@
 ﻿using Data.Entities;
+using Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Data
 {
-    public class Storage
+    public class Storage : IDisposable
     {
-        public DataContext DbContext;
+        public int DB_VERSION = 1;
+        public DataContext DbContext { get; private set; }
 
         private ILogger _logger;
         private string _databasePath;
@@ -17,7 +19,7 @@ namespace Data
             _logger = logger;
         }
 
-        public void SetDatabaseConfig(string databasePath)
+        public void InitializeDbContext(string databasePath)
         {
             try
             {
@@ -45,7 +47,74 @@ namespace Data
             }
 
             _databasePath = databasePath;
+
+            var currentDbVersion = DbContext.DbMetas.FirstOrDefault()?.DbVersion ?? 0;
+            if (currentDbVersion < 1)
+            {
+                _logger.LogInformation("Migrating from older version");
+                MigrateFromOlderVersion(databasePath);
+            }
         }
+        private string GetRandomFileName()
+        {
+            return Path.GetRandomFileName() + ".gga";
+        }
+        private void MigrateFromOlderVersion(string databasePath)
+        {
+            File.Copy(databasePath, databasePath + ".backup");
+            var dbFileName = Path.GetFileName(databasePath);
+            FileInfo dbFi = new FileInfo(databasePath);
+            var dbFileDir = Path.GetDirectoryName(databasePath);
+            var dbAssetsDir = Directory.CreateDirectory(Path.Combine(dbFileDir, dbFileName + "-assets"));
+
+            foreach (var item in DbContext.Materials)
+            {
+                if (item.PdfData != null)
+                {
+                    string fileName = GetRandomFileName();
+                    item.PdfPath = fileName;
+
+                    File.WriteAllBytes(Path.Combine(dbAssetsDir.FullName, fileName), item.PdfData);
+                    item.PdfData = new byte[] { 0 };
+                }
+
+                if (item.Audio != null)
+                {
+                    string fileName = GetRandomFileName();
+                    item.AudioPath = fileName;
+
+                    File.WriteAllBytes(Path.Combine(dbAssetsDir.FullName, fileName), item.Audio);
+                    item.Audio = null;
+                }
+            }
+
+            foreach (var item in DbContext.AssignmentItems)
+            {
+                if (item.Image != null)
+                {
+                    string fileName = GetRandomFileName();
+                    item.ImagePath = fileName;
+
+                    File.WriteAllBytes(Path.Combine(dbAssetsDir.FullName, fileName), item.Image);
+                    item.Image = null;
+                }
+            }
+
+            var dbMeta = DbContext.DbMetas.FirstOrDefault();
+            if (dbMeta != null && dbMeta.BackgroundImage != null)
+            {
+                string fileName = GetRandomFileName();
+                dbMeta.BackgroundImagePath = fileName;
+
+                File.WriteAllBytes(Path.Combine(dbAssetsDir.FullName, fileName), dbMeta.BackgroundImage);
+                dbMeta.BackgroundImage = null;
+
+                dbMeta.DbVersion = DB_VERSION;
+            }
+            DbContext.Database.ExecuteSqlRaw("VACUUM;");
+            DbContext.SaveChanges();
+        }
+
         public void CreateDatabase(string databasePath)
         {
             if (File.Exists(databasePath))
@@ -53,7 +122,7 @@ namespace Data
                 DropDatabase(databasePath);
             }
 
-            SetDatabaseConfig(databasePath);
+            InitializeDbContext(databasePath);
 
             SetDbMeta(databasePath);
 
@@ -61,12 +130,10 @@ namespace Data
         }
         public void SetDbMeta(string databasePath)
         {
-            string? appVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
-
             var dbMeta = new DbMeta()
             {
                 Title = Path.GetFileNameWithoutExtension(databasePath),
-                AppVersion = appVersion
+                DbVersion = DB_VERSION
             };
 
             DbContext.DbMetas.Add(dbMeta);
@@ -108,6 +175,27 @@ namespace Data
                 _logger.LogError(ex.Message, ex.StackTrace, ex.InnerException);
                 throw;
             }
+        }
+
+        public void Dispose()
+        {
+            DbContext?.Dispose();
+        }
+
+        public static byte[]? ReadDbAsset(string? fileName)
+        {
+            var settingsService = new SettingsService();
+            var dbAbsolutePath = settingsService.GetValue("lastOpenedDatabasePath");
+
+            if (fileName == null)
+            {
+                return null;
+            }
+
+            var dbDirectory = Path.GetDirectoryName(dbAbsolutePath);
+            var assetsDirectory = Path.GetFileName(dbAbsolutePath) + "-assets";
+
+            return File.ReadAllBytes(Path.Combine(dbDirectory, assetsDirectory, fileName));
         }
     }
 }

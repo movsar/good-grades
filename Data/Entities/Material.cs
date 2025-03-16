@@ -15,6 +15,8 @@ namespace Data.Entities
         public byte[]? PdfData { get; set; }
         public byte[]? Audio { get; set; } = null;
 
+        public string? PdfPath { get; set; } = null;
+        public string? AudioPath { get; set; } = null;
         public int Order { get; set; }
     }
 }

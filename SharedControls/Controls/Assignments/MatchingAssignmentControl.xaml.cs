@@ -1,4 +1,5 @@
-﻿using Data.Entities;
+﻿using Data;
+using Data.Entities;
 using Data.Interfaces;
 using Shared.Interfaces;
 using System;
@@ -51,7 +52,9 @@ namespace Shared.Controls.Assignments
             // Load matching pairs from the assignment into the dictionary.
             foreach (var item in _assignment.Items)
             {
-                _matchingPairs.Add(item.Text, ConvertByteArrayToBitmapImage(item.Image));
+                var data = Storage.ReadDbAsset(item.ImagePath);
+
+                _matchingPairs.Add(item.Text, ConvertByteArrayToBitmapImage(data));
             }
 
             var imageBorders = new List<Border>();

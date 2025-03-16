@@ -59,17 +59,19 @@ namespace GGPlayer.Pages
 
             //открытие последней открытой БД
             _settingsService.SetValue("lastOpenedDatabasePath", dbAbsolutePath);
-            _storage.SetDatabaseConfig(dbAbsolutePath);
+            _storage.InitializeDbContext(dbAbsolutePath);
             btnGo.IsEnabled = true;
 
             // Set the background image for the class
             var dbMeta = _storage.DbContext.DbMetas.First();
             Title = "Good Grades: " + dbMeta.Title;
-            if (dbMeta.BackgroundImage?.Length > 0)
+            if (!string.IsNullOrWhiteSpace(dbMeta.BackgroundImagePath))
             {
                 BitmapImage logo = new BitmapImage();
                 logo.BeginInit();
-                logo.StreamSource = new MemoryStream(dbMeta.BackgroundImage);
+                var data = Storage.ReadDbAsset(dbMeta.BackgroundImagePath);
+
+                logo.StreamSource = new MemoryStream(data);
                 logo.EndInit();
                 ImageBrush myBrush = new ImageBrush(logo);
                 myBrush.Stretch = Stretch.UniformToFill;
