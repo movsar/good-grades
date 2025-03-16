@@ -19,7 +19,7 @@ namespace Data
             _logger = logger;
         }
 
-        public void SetDatabaseConfig(string databasePath)
+        public void InitializeDbContext(string databasePath)
         {
             try
             {
@@ -122,7 +122,7 @@ namespace Data
                 DropDatabase(databasePath);
             }
 
-            SetDatabaseConfig(databasePath);
+            InitializeDbContext(databasePath);
 
             SetDbMeta(databasePath);
 
