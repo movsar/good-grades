@@ -2,10 +2,12 @@
 using Data.Entities;
 using Data.Interfaces;
 using Data.Services;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Shared.Services;
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace GGManager.Stores
@@ -15,7 +17,7 @@ namespace GGManager.Stores
      * to know which object is currently selected, to process events from other windows etc.
      * Otherwise Database access will be done in ViewModels directly
      */
-    public class ContentStore
+    public class ContentStore : IDisposable
     {
 
         #region Events, Properties and Fields
@@ -98,6 +100,11 @@ namespace GGManager.Stores
         {
             var dbPath = _fileService.GetValue("lastOpenedDatabasePath");
             _storage.SetDbMeta(dbPath);
+        }
+
+        public void Dispose()
+        {
+            _storage?.Dispose();
         }
     }
 }

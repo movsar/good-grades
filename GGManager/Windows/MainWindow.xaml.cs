@@ -177,5 +177,11 @@ namespace GGManager
             });
         }
 
+        protected override void OnClosed(EventArgs e)
+        {
+            _contentStore?.Dispose();
+            base.OnClosed(e);
+        }
+
     }
 }

@@ -1,14 +1,14 @@
 ﻿using Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Data
 {
-    public class Storage
+    public class Storage : IDisposable
     {
         public int DB_VERSION = 1;
-        public DataContext DbContext;
+        public DataContext DbContext { get; private set; }
 
         private ILogger _logger;
         private string _databasePath;
@@ -54,9 +54,13 @@ namespace Data
                 MigrateFromOlderVersion(databasePath);
             }
         }
-
+        private string GetRandomFileName()
+        {
+            return Path.GetRandomFileName() + ".gga";
+        }
         private void MigrateFromOlderVersion(string databasePath)
         {
+            File.Copy(databasePath, databasePath + ".backup");
             var dbFileName = Path.GetFileName(databasePath);
             var dbFileDir = Path.GetDirectoryName(databasePath);
             var dbAssetsDir = Directory.CreateDirectory(Path.Combine(dbFileDir, dbFileName + "-assets"));
@@ -65,7 +69,7 @@ namespace Data
             {
                 if (material.PdfData != null)
                 {
-                    string path = Path.Combine(dbAssetsDir.FullName, Path.GetRandomFileName());
+                    string path = Path.Combine(dbAssetsDir.FullName, GetRandomFileName());
 
                     File.WriteAllBytes(path, material.PdfData);
 
@@ -75,7 +79,7 @@ namespace Data
 
                 if (material.Audio != null)
                 {
-                    string path = Path.Combine(dbAssetsDir.FullName, Path.GetRandomFileName());
+                    string path = Path.Combine(dbAssetsDir.FullName, GetRandomFileName());
 
                     File.WriteAllBytes(path, material.Audio);
 
@@ -88,7 +92,7 @@ namespace Data
             {
                 if (item.Image != null)
                 {
-                    string path = Path.Combine(dbAssetsDir.FullName, Path.GetRandomFileName());
+                    string path = Path.Combine(dbAssetsDir.FullName, GetRandomFileName());
                     File.WriteAllBytes(path, item.Image);
 
                     item.ImagePath = path;
@@ -99,7 +103,7 @@ namespace Data
             var dbMeta = DbContext.DbMetas.FirstOrDefault();
             if (dbMeta != null && dbMeta.BackgroundImage != null)
             {
-                string path = Path.Combine(dbAssetsDir.FullName, Path.GetRandomFileName());
+                string path = Path.Combine(dbAssetsDir.FullName, GetRandomFileName());
 
                 File.WriteAllBytes(path, dbMeta.BackgroundImage);
 
@@ -107,7 +111,7 @@ namespace Data
                 dbMeta.BackgroundImage = null;
                 dbMeta.DbVersion = DB_VERSION;
             }
-
+            DbContext.Database.ExecuteSqlRaw("VACUUM;");
             DbContext.SaveChanges();
         }
 
@@ -171,6 +175,11 @@ namespace Data
                 _logger.LogError(ex.Message, ex.StackTrace, ex.InnerException);
                 throw;
             }
+        }
+
+        public void Dispose()
+        {
+            DbContext?.Dispose();
         }
     }
 }
