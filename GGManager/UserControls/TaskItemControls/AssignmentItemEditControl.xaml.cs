@@ -40,9 +40,11 @@ namespace GGManager.UserControls
         }
         private void OnImageSet(bool isSet = true)
         {
+            var data = Storage.ReadDbAsset(Item.ImagePath);
+
             BitmapImage logo = new BitmapImage();
             logo.BeginInit();
-            logo.StreamSource = new MemoryStream(Item.Image!);
+            logo.StreamSource = new MemoryStream(data!);
             logo.EndInit();
 
             var imgControl = new Image();
@@ -50,7 +52,7 @@ namespace GGManager.UserControls
             imgControl.Source = logo;
             btnChooseImage.Content = imgControl;
 
-            _formCompletionInfo.Update(nameof(Item.Image), isSet);
+            _formCompletionInfo.Update(nameof(Item.ImagePath), isSet);
         }
         #endregion
 
@@ -79,7 +81,7 @@ namespace GGManager.UserControls
 
                     btnChooseImage.Visibility = Visibility.Visible;
 
-                    propertiesToWatch.Add(nameof(Item.Image));
+                    propertiesToWatch.Add(nameof(Item.ImagePath));
 
                     break;
                 case AssignmentType.Test:
@@ -117,7 +119,7 @@ namespace GGManager.UserControls
             txtItemText.Text = Item.Text;
             OnTextSet(true);
 
-            if (Item.Image != null)
+            if (Item.ImagePath != null)
             {
                 OnImageSet(true);
             }
@@ -139,7 +141,7 @@ namespace GGManager.UserControls
                 {
                     case AssignmentType.Matching:
                         //проверка на заданность изображений в задании сопоставления
-                        if (Item.Image == null)
+                        if (Item.ImagePath == null)
                         {
                             throw new Exception(Translations.GetValue("SetMatchingImage"));
                         }
@@ -251,11 +253,7 @@ namespace GGManager.UserControls
                 return;
             }
 
-            // Чтение содержимого файла и добавление его в объект Item
-            var content = File.ReadAllBytes(filePath);
-            if (content.Length == 0) return;
-
-            Item.Image = content;
+            Item.ImagePath = filePath;
 
             OnImageSet(true);
         }

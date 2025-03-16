@@ -14,6 +14,7 @@ using System.Windows.Input;
 using Shared.Controls;
 using Plugin.SimpleAudioPlayer;
 using System.Windows.Media;
+using Data;
 
 namespace GGManager.UserControls
 {
@@ -35,8 +36,8 @@ namespace GGManager.UserControls
         public static readonly DependencyProperty TitleProperty =
             DependencyProperty.Register("LmTitle", typeof(string), typeof(MaterialControl), new PropertyMetadata(""));
 
-        public byte[]? PdfData { get; set; }
-        public byte[]? Audio { get; set; }
+        public string? PdfPath { get; set; }
+        public string? AudioPath { get; set; }
         private string Id { get; }
         #endregion
 
@@ -62,13 +63,13 @@ namespace GGManager.UserControls
         {
             btnChooseText.Background = StylingService.StagedBrush;
 
-            _formCompletionInfo.Update(nameof(PdfData), isSet);
+            _formCompletionInfo.Update(nameof(PdfPath), isSet);
         }
         private void OnAudioSet(bool isSet = true)
         {
             btnChooseAudio.Background = StylingService.StagedBrush;
 
-            _formCompletionInfo.Update(nameof(Audio), isSet);
+            _formCompletionInfo.Update(nameof(AudioPath), isSet);
         }
         #endregion
 
@@ -84,7 +85,7 @@ namespace GGManager.UserControls
             btnDelete.Visibility = Visibility.Visible;
 
             btnChooseText.Background = StylingService.ReadyBrush;
-            if (Audio != null)
+            if (AudioPath != null)
             {
                 btnChooseAudio.Background = StylingService.ReadyBrush;
             }
@@ -97,7 +98,7 @@ namespace GGManager.UserControls
             var propertiesToWatch = new List<string>
             {
                 nameof(Title),
-                nameof(PdfData),
+                nameof(PdfPath),
             };
 
             _formCompletionInfo = new FormCompletionInfo(propertiesToWatch, isExistingMaterial);
@@ -117,8 +118,8 @@ namespace GGManager.UserControls
 
             Id = material.Id;
             Title = material.Title;
-            PdfData = material.PdfData;
-            Audio = material.Audio;
+            PdfPath = material.PdfPath;
+            AudioPath = material.AudioPath;
             SetUiForExistingMaterial();
         }
         #endregion
@@ -168,20 +169,18 @@ namespace GGManager.UserControls
             if (string.IsNullOrEmpty(filePath)) return;
 
             var sizeInKilobytes = (new FileInfo(filePath)).Length / 1024;
+            if (sizeInKilobytes < 1)
+            {
+                return;
+            }
+
             if (sizeInKilobytes > 10_000)
             {
                 MessageBox.Show("Размер файла не должен превышать 10Mb");
                 return;
             }
 
-            // Read, load contents to the object and add to collection            
-            var content = File.ReadAllBytes(filePath);
-            if (content.Length == 0)
-            {
-                return;
-            }
-
-            PdfData = content;
+            PdfPath = filePath;
             OnTextSet(true);
         }
 
@@ -192,16 +191,19 @@ namespace GGManager.UserControls
             if (string.IsNullOrEmpty(filePath)) return;
 
             // Read, load contents to the object and add to collection
-            var content = File.ReadAllBytes(filePath);
-            if (content.Length == 0) return;
-
-            if (content.Length > 6_000_000)
+            var sizeInKilobytes = (new FileInfo(filePath)).Length / 1024;
+            if (sizeInKilobytes < 1)
             {
-                MessageBox.Show("Слишком большой файл, должен быть до 5Мб");
                 return;
             }
 
-            Audio = content;
+            if (sizeInKilobytes > 10_000)
+            {
+                MessageBox.Show("Размер файла не должен превышать 10Mb");
+                return;
+            }
+
+            AudioPath = filePath;
             OnAudioSet(true);
         }
 
@@ -213,7 +215,9 @@ namespace GGManager.UserControls
             };
 
             var materialControl = new MaterialViewerControl();
-            materialControl.Initialize(Title, PdfData, Audio);
+            var pdfData = Storage.ReadDbAsset(PdfPath);
+            var audioData = Storage.ReadDbAsset(AudioPath);
+            materialControl.Initialize(Title, pdfData, audioData);
 
             window.Content = materialControl;
             window.Closing += Window_Closing;
@@ -239,8 +243,8 @@ namespace GGManager.UserControls
                 var lm = new Material
                 {
                     Title = Title,
-                    PdfData = PdfData,
-                    Audio = Audio,
+                    PdfPath = PdfPath,
+                    AudioPath = AudioPath,
                 };
 
                 ContentStore.SelectedSegment?.Materials.Add(lm);
@@ -252,8 +256,8 @@ namespace GGManager.UserControls
             {
                 var lm = ContentStore.DbContext.Materials.First(lm => lm.Id == Id);
                 lm.Title = Title;
-                lm.PdfData = PdfData;
-                lm.Audio = Audio;
+                lm.PdfPath = PdfPath;
+                lm.AudioPath = AudioPath;
 
                 ContentStore.DbContext.SaveChanges();
 

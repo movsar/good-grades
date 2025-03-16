@@ -1,4 +1,5 @@
 ﻿using Data.Entities;
+using Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
@@ -179,6 +180,22 @@ namespace Data
         public void Dispose()
         {
             DbContext?.Dispose();
+        }
+
+        public static byte[]? ReadDbAsset(string? fileName)
+        {
+            var settingsService = new SettingsService();
+            var dbAbsolutePath = settingsService.GetValue("lastOpenedDatabasePath");
+
+            if (fileName == null)
+            {
+                return null;
+            }
+
+            var dbDirectory = Path.GetDirectoryName(dbAbsolutePath);
+            var assetsDirectory = Path.GetFileName(dbAbsolutePath) + "-assets";
+
+            return File.ReadAllBytes(Path.Combine(dbDirectory, assetsDirectory, fileName));
         }
     }
 }

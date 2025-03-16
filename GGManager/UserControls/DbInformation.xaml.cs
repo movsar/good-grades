@@ -11,6 +11,7 @@ using GGManager.Services;
 using System.IO;
 using System.Reflection;
 using System.Windows.Media;
+using Data;
 
 namespace GGManager.UserControls
 {
@@ -18,7 +19,7 @@ namespace GGManager.UserControls
     {
         private readonly ContentStore _contentStore = App.AppHost!.Services.GetRequiredService<ContentStore>();
         public event Action Saved;
-        private byte[]? _backgroundImage = null;
+        private string? _backgroundImagePath = null;
 
         public DbInformation()
         {
@@ -32,9 +33,9 @@ namespace GGManager.UserControls
             txtDescription.Text = dbMeta.Description;
             txtAppVersion.Text = dbMeta.AppVersion;
             txtFilePath.Text = _contentStore.DbContext.Database.GetDbConnection().DataSource;
-            _backgroundImage = dbMeta.BackgroundImage;
+            _backgroundImagePath = dbMeta.BackgroundImagePath;
 
-            if (_backgroundImage?.Length > 0)
+            if (_backgroundImagePath?.Length > 0)
             {
                 btnChooseBackground.Background = Brushes.LightGreen;
             }
@@ -56,11 +57,7 @@ namespace GGManager.UserControls
                 return;
             }
 
-            // Read, load contents to the object and add to collection
-            var content = File.ReadAllBytes(filePath);
-            if (content.Length == 0) return;
-
-            _backgroundImage = content;
+            _backgroundImagePath = filePath;
 
             btnChooseBackground.Background = Brushes.LightYellow;
         }
@@ -77,11 +74,11 @@ namespace GGManager.UserControls
             var dbMeta = _contentStore.DbContext.DbMetas.First();
             dbMeta.Title = newName;
             dbMeta.Description = newDescription;
-            dbMeta.BackgroundImage = _backgroundImage;
+            dbMeta.BackgroundImagePath = _backgroundImagePath;
 
             _contentStore.DbContext.SaveChanges();
 
-            if (_backgroundImage?.Length > 0)
+            if (_backgroundImagePath?.Length > 0)
             {
                 btnChooseBackground.Background = Brushes.LightGreen;
             }
