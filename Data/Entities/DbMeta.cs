@@ -12,8 +12,10 @@ namespace Data.Entities
         public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.Now;
         /******************************************************************/
         public byte[]? BackgroundImage { get; set; } = null;
+        public string? BackgroundImagePath { get; set; } = null;
         public string Title { get; set; }
         public string? Description { get; set; }
         public string? AppVersion { get; set; }
+        public int DbVersion { get; set; } = 1;
     }
 }

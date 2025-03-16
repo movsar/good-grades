@@ -13,6 +13,7 @@ namespace Data.Entities.TaskItems
         /******************************************************************/
         public string Text { get; set; }
         public byte[]? Image { get; set; } = null;
+        public string? ImagePath { get; set; } = null;
         // For questions etc
         public bool IsChecked { get; set; } = false;
 
