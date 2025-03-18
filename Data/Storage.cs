@@ -2,6 +2,7 @@
 using Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using System.Runtime.CompilerServices;
 
 namespace Data
@@ -41,7 +42,7 @@ namespace Data
                 }
                 else
                 {
-                    _logger.LogCritical(ex.Message, ex.Source, ex.StackTrace, ex.InnerException);
+                    Log.Fatal(ex.Message, ex.Source, ex.StackTrace, ex.InnerException);
                     throw;
                 }
             }
