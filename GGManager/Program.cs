@@ -18,7 +18,7 @@ namespace GGManager
             }
             string logPath = Path.Combine("logs", "logs.txt");
             Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
+            .MinimumLevel.Debug()
             .WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
