@@ -12,7 +12,7 @@ namespace Data
         public int DB_VERSION = 1;
         public DataContext DbContext { get; private set; }
 
-        private ILogger _logger;
+        private Microsoft.Extensions.Logging.ILogger _logger;
         private string _databasePath;
 
         public Storage(ILogger<Storage> logger)
