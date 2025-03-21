@@ -49,5 +49,28 @@ namespace Data.Services
             var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(_filePath, json);
         }
+
+        public void ApplyCommandLineArguments(string[] args)
+        {
+            var argumentDictionary = new Dictionary<string, string>();
+            foreach (var arg in args)
+            {
+                var parts = arg.Split('=');
+                if (parts.Length != 2)
+                {
+                    continue;
+                }
+
+                argumentDictionary.Add(
+                    parts[0].ToLower().Trim(),
+                    parts[1].ToLower().Trim());
+            }
+
+            argumentDictionary.TryGetValue("dbfilepath", out var dbFilepath);
+            if (File.Exists(dbFilepath) && Path.GetExtension(dbFilepath) == ".sgb")
+            {
+                SetValue("lastOpenedDatabasePath", dbFilepath);
+            }
+        }
     }
 }

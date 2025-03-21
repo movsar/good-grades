@@ -3,7 +3,6 @@ using Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using System.Runtime.CompilerServices;
 
 namespace Data
 {
