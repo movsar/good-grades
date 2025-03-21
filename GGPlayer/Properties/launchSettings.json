@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GGPlayer": {
+      "commandName": "Project",
+      "commandLineArgs": "dbFilePath=\"D:\\source\\movsar\\good-grades.assets\\Database\\GoodGradesSqlite.sgb\""
+    }
+  }
+}

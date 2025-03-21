@@ -19,6 +19,7 @@ namespace GGPlayer
     public partial class App : Application
     {
         private static Mutex? _appMutex;
+
         public static IHost? AppHost { get; private set; }
         public App()
         {
@@ -89,11 +90,14 @@ namespace GGPlayer
             AppHost.Start();
             base.OnStartup(e);
 
-            var uiLanguageCode = AppHost.Services.GetRequiredService<SettingsService>().GetValue("uiLanguageCode");
+            var settingsService = AppHost.Services.GetRequiredService<SettingsService>();
+            settingsService.ApplyCommandLineArguments(e.Args);
+            
+            var uiLanguageCode = settingsService.GetValue("uiLanguageCode");
             Translations.SetToCulture(uiLanguageCode ?? "uk");
 
             var startWindow = AppHost.Services.GetRequiredService<ShellWindow>();
-            startWindow.Show(); 
+            startWindow.Show();
             var updateService = AppHost.Services.GetRequiredService<UpdateService>();
             await updateService.AutoUpdate("player");
         }
