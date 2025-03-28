@@ -7,6 +7,7 @@ using System.Windows.Media.Effects;
 using Data.Interfaces;
 using GGPlayer.Pages.Assignments;
 using GGPlayer.Services;
+using Serilog;
 using Shared.Controls;
 using Shared.Interfaces;
 
@@ -26,6 +27,7 @@ namespace GGPlayer.Pages
         public AssignmentsPage(ShellNavigationService navigationService, AssignmentViewerPage assignmentViewerPage)
         {
             InitializeComponent();
+            Log.Information("Assignment page was initialized");
             _navigationService = navigationService;
             _assignmentViewerPage = assignmentViewerPage;
 

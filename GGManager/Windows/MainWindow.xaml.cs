@@ -13,6 +13,7 @@ using System.Diagnostics;
 using Shared;
 using Shared.Services;
 using System;
+using Serilog;
 
 namespace GGManager
 {
@@ -26,6 +27,7 @@ namespace GGManager
         {          
             InitializeComponent();
             DataContext = this;
+            Log.Information("MainWindow initialized");
 
             //инициализация и подписка на события
             _settingsService = settingsService;
@@ -38,6 +40,7 @@ namespace GGManager
             var lastOpenedDatabasePath = _settingsService.GetValue("lastOpenedDatabasePath");
             if (!string.IsNullOrEmpty(lastOpenedDatabasePath) && File.Exists(lastOpenedDatabasePath))
             {
+                Log.Debug("Found last opened database path: {path}", lastOpenedDatabasePath);
                 _contentStore.OpenDatabase(lastOpenedDatabasePath);
             }
 
@@ -48,6 +51,7 @@ namespace GGManager
 
         private void SelectedSegmentChanged(Segment segment)
         {
+            Log.Debug("Segment changed to {segmentId}", segment?.Id);
             if (segment != null)
             {
                 lblChooseSegment.Visibility = Visibility.Hidden;
@@ -72,16 +76,26 @@ namespace GGManager
 
         private void mnuOpenDatabase_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("User initiated database open");
             string filePath = FileService.SelectDatabaseFilePath();
-            if (string.IsNullOrEmpty(filePath)) return;
+            if (string.IsNullOrEmpty(filePath)) 
+            {
+                Log.Debug("database isn't opened");
+                return; 
+            }
 
             _contentStore.OpenDatabase(filePath);
         }
 
         private void mnuCreateDatabase_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("User initiated database creation");
             string filePath = FileService.SelectNewDatabaseFilePath();
-            if (string.IsNullOrEmpty(filePath)) return;
+            if (string.IsNullOrEmpty(filePath)) 
+            {
+                Log.Debug("database isn't created");
+                return;
+            }
             _contentStore.CreateDatabase(filePath);
             Task.Delay(200);
             var dbInfo = new DbInfoWindow();
@@ -90,26 +104,31 @@ namespace GGManager
 
         private void mnuDatabaseInfo_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("Info about Database opened successfully");
             var dbInfoWindow = new DbInfoWindow();
             dbInfoWindow.ShowDialog();
         }
 
         private void mnuAbout_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("About window opened");
             var aboutWindow = new AboutWindow();
             aboutWindow.ShowDialog();
         }
 
         private void OnDatabaseOpened()
         {
+            Log.Information("Database opened");
             if (!_contentStore.DbContext.DbMetas.Any())
             {
+                Log.Debug("No DbMeta found, creating new one");
                 _contentStore.SetDbMeta();
                 var dbInfo = new DbInfoWindow();
                 dbInfo.ShowDialog();
             }
 
             _contentStore.SelectedSegment = _contentStore.DbContext.Segments.FirstOrDefault();
+            Log.Debug($"Selected segment: {_contentStore.SelectedSegment?.Id}");
 
             lblChooseDb.Visibility = Visibility.Collapsed;
             lblChooseSegment.Visibility = Visibility.Visible;
@@ -121,17 +140,20 @@ namespace GGManager
 
         private void mnuImportDatabase_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("Attempt to import Database");
             string filePath = FileService.SelectDatabaseFilePath();
             if (!File.Exists(filePath))
             {
                 return;
             }
             _contentStore.ImportDatabase(filePath);
+            Log.Debug($"Imported database {filePath}");
         }
         #endregion
 
         private async void mnuCheckUpdates_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("User initiated update check");
             var updateService = new UpdateService(_settingsService);
             IsEnabled = false;
             await _updateService.UpdateMyApp("manager");
@@ -140,6 +162,7 @@ namespace GGManager
 
         private void mnuSetLanguageChechen_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("set Chechen Language");
             _settingsService.SetValue("uiLanguageCode", "uk");
             Translations.SetToCulture("uk");
             Translations.RestartApp();
@@ -147,6 +170,7 @@ namespace GGManager
 
         private void mnuSetLanguageRussian_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("set Russian Language");
             _settingsService.SetValue("uiLanguageCode", "ru");
             Translations.SetToCulture("ru");
             Translations.RestartApp();
@@ -154,7 +178,7 @@ namespace GGManager
 
         private void MnuOpenLogFiles_Click(object sender, RoutedEventArgs e)
         {
-           
+            Log.Information("Opening Log Files");
             string appName = Assembly.GetEntryAssembly().GetName().Name;
 
             string logsPath = Path.Combine(
@@ -166,6 +190,7 @@ namespace GGManager
 
             if (!Directory.Exists(logsPath))
             {
+                Log.Debug("logs does not found, creating directory");
                 Directory.CreateDirectory(logsPath);
             }
 

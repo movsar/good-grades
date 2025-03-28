@@ -2,6 +2,7 @@
 using Data.Entities;
 using Data.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Shared.Controls;
 using Shared.Controls.Assignments;
 using Shared.Interfaces;
@@ -16,6 +17,7 @@ namespace GGPlayer.Pages.Assignments
         public AssignmentViewerPage()
         {
             InitializeComponent();
+            Log.Information("Assignment viewer page was initialized");
         }
 
         public void LoadAssignment(IAssignment assignment)
@@ -49,6 +51,7 @@ namespace GGPlayer.Pages.Assignments
             viewer.AssignmentCompleted -= Viewer_AssignmentCompleted;
             viewer.AssignmentCompleted += Viewer_AssignmentCompleted;
             ucRoot.Content = viewer;
+            Log.Debug($"{assignment} was loaded");
         }
 
         private void Viewer_AssignmentCompleted(IAssignment assignment, bool success)

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Windows;
 using System;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace GGManager.Windows.Editors
 {
@@ -23,7 +24,7 @@ namespace GGManager.Windows.Editors
         {
             InitializeComponent();
             DataContext = this;
-
+            Log.Information("Filling assignment editor opened");
             _assignment = taskEntity ?? new FillingAssignment()
             {
                 Title = txtTitle.Text

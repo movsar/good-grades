@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using GGPlayer.Services;
 using System.ComponentModel;
 using System.Windows.Data;
+using Serilog;
 
 namespace GGPlayer.Pages
 {
@@ -37,7 +38,7 @@ namespace GGPlayer.Pages
         {
             // Intialize the visual elements
             InitializeComponent();
-
+            Log.Information("Main page was initialized");
             // Load Segments into the collection view
             foreach (var segment in _storage.DbContext.Segments.OrderBy(s => s.Order))
             {

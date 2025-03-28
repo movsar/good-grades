@@ -64,6 +64,7 @@ namespace Data
         private void MigrateFromOlderVersion(string databasePath)
         {
             Log.Debug("Starting migration from older version for database");
+            File.Delete(databasePath + ".backup");
             File.Copy(databasePath, databasePath + ".backup");
             var dbFileName = Path.GetFileName(databasePath);
             FileInfo dbFi = new FileInfo(databasePath);

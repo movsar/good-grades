@@ -8,6 +8,7 @@ using Shared.Controls;
 using GGPlayer.Services;
 using System.Collections.ObjectModel;
 using System.Windows;
+using Serilog;
 
 namespace GGPlayer.Pages
 {
@@ -25,6 +26,7 @@ namespace GGPlayer.Pages
         {
             InitializeComponent();
             DataContext = this;
+            Log.Information("Segment page was initialized");
 
             _navigationService = navigationService;
             _assignmentsPage = assignmentsPage;
