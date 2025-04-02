@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Serilog;
 
 namespace GGManager.Windows.Editors
 {
@@ -21,6 +22,7 @@ namespace GGManager.Windows.Editors
         {
             InitializeComponent();
             DataContext = this;
+            Log.Information("Testing assignment editor opened");
 
             _assignment = assignment ?? new TestingAssignment()
             {

@@ -12,6 +12,7 @@ using GGPlayer.Services;
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace GGPlayer.Pages
 {
@@ -26,7 +27,7 @@ namespace GGPlayer.Pages
         {
             InitializeComponent();
             DataContext = this;
-
+            Log.Information("Start page was initialized");
 
             _storage = storage;
             _settingsService = settingsService;
@@ -102,33 +103,39 @@ namespace GGPlayer.Pages
 
         private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("About window opened");
             AboutWindow aboutWindow = new AboutWindow();
             aboutWindow.ShowDialog();
         }
 
         private void CloseProgram_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("Program was shutdown");
             Application.Current.Shutdown();
         }
         private void OpenDatabase_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("Open database");
             LoadDatabase(false);
         }
 
         private void mnuSetLanguageChechen_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("Set language Chechen");
             _settingsService.SetValue("uiLanguageCode", "uk");
             Translations.RestartApp();
         }
 
         private void mnuSetLanguageRussian_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("Set language Russian");
             _settingsService.SetValue("uiLanguageCode", "ru");
             Translations.RestartApp();
         }
 
         private async void mnuCheckUpdates_Click(object sender, RoutedEventArgs e)
         {
+            Log.Information("Checking Updates was started");
             var updateService = new UpdateService(_settingsService);
             IsEnabled = false;
             await _updateService.UpdateMyApp("player");
@@ -136,8 +143,8 @@ namespace GGPlayer.Pages
         }
 
         private void MnuOpenLogFiles_Click(object sender, RoutedEventArgs e)
-        { 
-           
+        {
+            Log.Information("Opening Log Files");
             string appName = Assembly.GetEntryAssembly().GetName().Name;
 
             string logsPath = Path.Combine(
@@ -149,6 +156,7 @@ namespace GGPlayer.Pages
 
             if (!Directory.Exists(logsPath))
             {
+                Log.Debug("logs does not found, creating directory");
                 Directory.CreateDirectory(logsPath);
             }
 

@@ -1,6 +1,7 @@
 ﻿using Data;
 using Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Shared.Controls;
 using System.Windows.Controls;
 
@@ -12,6 +13,7 @@ namespace GGPlayer.Pages
         {
             InitializeComponent();
             DataContext = this;
+            Log.Information("Material View page was initialized");
         }
 
         public void Initialize(Material material)

@@ -1,5 +1,6 @@
 ﻿using GGPlayer.Pages;
 using GGPlayer.Services;
+using Serilog;
 using Shared;
 using Shared.Controls;
 using System.ComponentModel;
@@ -17,7 +18,7 @@ namespace GGPlayer
         public ShellWindow(ShellNavigationService navigationService)
         {
             InitializeComponent();
-
+            Log.Information("Shell Window was initialized");
             _navigationService = navigationService;
             _navigationService.Initialize(CurrentFrame);
 
