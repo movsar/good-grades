@@ -90,6 +90,9 @@ namespace GGPlayer
             AppHost.Start();
             base.OnStartup(e);
 
+            var apiService = new ApiService();
+            Task.Run(() => apiService.SendLogsAsync());
+
             var settingsService = AppHost.Services.GetRequiredService<SettingsService>();
             settingsService.ApplyCommandLineArguments(e.Args);
             
