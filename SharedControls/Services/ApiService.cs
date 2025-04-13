@@ -106,7 +106,7 @@ namespace Shared.Services
             try
             {
                 using var ping = new Ping();
-                var reply = await ping.SendPingAsync("8.8.8.8", PingTimeout);
+                var reply = await ping.SendPingAsync(ApiUrl, PingTimeout);
                 return reply.Status == IPStatus.Success;
             }
             catch
