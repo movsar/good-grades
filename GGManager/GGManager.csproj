@@ -6,7 +6,7 @@
 		<RootNamespace>GGManager</RootNamespace>
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
-		<Version>1.3.9</Version>
+		<Version>1.4.0</Version>
 		<StartupObject>GGManager.Program</StartupObject>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>AnyCPU;x86</Platforms>

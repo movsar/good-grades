@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -17,10 +18,35 @@ namespace Shared.Services
 {
     public class ApiService
     {
+        // Define compiled regex patterns for better performance
+        private static readonly Regex TimestampRegex = new(@"^(.*?)\s*(?=\[)", RegexOptions.Compiled);
+        private static readonly Regex TagRegex = new(@"(?<=\[).+?(?=\])", RegexOptions.Compiled);
+        private static readonly Regex MessageRegex = new(@"(?<=\]).*", RegexOptions.Compiled);
+
+
         private readonly HttpClient _httpClient = new HttpClient();
+        private readonly string? _programName;
+        private readonly string? _programVersion;
+        private readonly string _windowsVersion;
+        private readonly string _systemDetails;
         private const string ApiUrl = "https://ggapi.movsar.dev/Logs";
         private const int PingTimeout = 3000;
 
+        [DllImport("kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool GetPhysicallyInstalledSystemMemory(out long TotalMemoryInKilobytes);
+
+        public ApiService()
+        {
+
+            long memKb;
+            GetPhysicallyInstalledSystemMemory(out memKb);
+            var installedRamInGb = memKb / 1024 / 1024;
+            _programName = Assembly.GetEntryAssembly()?.GetName().Name;
+            _programVersion = Assembly.GetEntryAssembly()?.GetName().Version?.ToString();
+            _windowsVersion = Environment.OSVersion.VersionString;
+            _systemDetails = $"{installedRamInGb}Gb | {(Environment.Is64BitOperatingSystem ? "64bit" : "32bit")} | {Environment.MachineName}";
+        }
         public async Task SendLogsAsync()
         {
             try
@@ -40,13 +66,15 @@ namespace Shared.Services
                 }
 
                 // Обработка файлов
-                foreach (var file in Directory.GetFiles("logs", "logs*.txt"))
+                foreach (var filePath in Directory.GetFiles("logs", "logs*.txt"))
                 {
-                    Debug.WriteLine($"Обработка файла: {file}");
+                    Debug.WriteLine($"Обработка файла: {filePath}");
 
-                    var content = await File.ReadAllTextAsync(file);
+                    var content = await File.ReadAllTextAsync(filePath);
                     var logs = ParseLogs(content);
                     Debug.WriteLine($"Найдено логов: {logs.Count}");
+
+                    logs = logs.Where(l => l.Level > (int)LogLevel.Debug).ToList();
 
                     // 4. Отправка пачками по 50
                     foreach (var batch in logs.Chunk(50))
@@ -63,7 +91,9 @@ namespace Shared.Services
                     }
 
                     // Удаление файла после успешной отправки
-                    File.Delete(file);
+                    var fi = new FileInfo(filePath);
+                    var newPath = fi.Directory.FullName + "sent-" + fi.Name;
+                    File.Move(filePath, newPath);
                 }
             }
             catch (Exception ex)
@@ -105,27 +135,34 @@ namespace Shared.Services
                 {
                     continue;
                 }
+
+                // Parse log details
+                var firstLine = lines[0];
+
+                DateTime.TryParse(TimestampRegex.Match(firstLine).Value, out var createdAt);
+                var tag = TagRegex.Match(firstLine).Value;
+                var message = MessageRegex.Match(firstLine).Value.Trim();
                 var stackTrace = lines.Length > 1 ? string.Join(Environment.NewLine, lines.Skip(1)) : null;
 
                 logs.Add(new LogMessage
                 {
                     Id = 0,
-                    Message = lines[0].Length > 19 ? lines[0].Substring(19).Trim() : lines[0],
+                    Message = message,
                     StackTrace = stackTrace,
-                    CreatedAt = DateTime.TryParse(lines[0].Substring(0, Math.Min(19, lines[0].Length)), out var date)
-                              ? date
-                              : DateTime.Now,
-                    Level = lines[0].Contains("[ERR]") ? (int)LogLevel.Error :
-                           lines[0].Contains("[WRN]") ? (int)LogLevel.Warning :
-                           lines[0].Contains("[INF]") ? (int)LogLevel.Information :
-                           (int)LogLevel.Debug,
-                    ProgramName = Assembly.GetEntryAssembly()?.GetName().Name,
-                    ProgramVersion = Assembly.GetEntryAssembly()?.GetName().Version?.ToString(),
-                    WindowsVersion = Environment.OSVersion.VersionString,
-                    SystemDetails = $"{Environment.OSVersion} | {Environment.MachineName} | " +
-                                  $"{Environment.ProcessorCount} cores | " +
-                                  $"{(Environment.Is64BitOperatingSystem ? "64-bit" : "32-bit")}"
+                    CreatedAt = createdAt,
+                    Level = tag switch
+                    {
+                        "ERR" => (int)LogLevel.Error,
+                        "WRN" => (int)LogLevel.Warning,
+                        "INF" => (int)LogLevel.Information,
+                        _ => (int)LogLevel.Debug
+                    },
+                    ProgramName = _programName,
+                    ProgramVersion = _programVersion,
+                    WindowsVersion = _windowsVersion,
+                    SystemDetails = _systemDetails
                 });
+
             }
 
             return logs;
@@ -147,8 +184,9 @@ namespace Shared.Services
                 var response = await _httpClient.PostAsync(ApiUrl, content);
                 return response.IsSuccessStatusCode;
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine(ex.Message);
                 return false;
             }
         }
