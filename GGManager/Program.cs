@@ -15,7 +15,10 @@ namespace GGManager
             if (FontInstaller.IsWindows7())
             {
                 FontInstaller.RunFontInstallScript();
+                WebView2Installer.InstallWebView2IfNeeded();
             }
+
+
             string logPath = Path.Combine("logs", "logs.txt");
             Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()

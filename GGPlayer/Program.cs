@@ -15,7 +15,9 @@ namespace GGPlayer
             if (FontInstaller.IsWindows7())
             {
                 FontInstaller.RunFontInstallScript();
+                WebView2Installer.InstallWebView2IfNeeded();
             }
+
             Translations.SetToCulture("uk");
 
             //создание лога, настройка конфигурации и его запись в файл
