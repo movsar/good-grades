@@ -15,7 +15,6 @@ namespace GGManager
             if (FontInstaller.IsWindows7())
             {
                 FontInstaller.RunFontInstallScript();
-                WebView2Installer.InstallWebView2IfNeeded();
             }
 
 

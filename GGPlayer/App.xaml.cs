@@ -10,6 +10,7 @@ using Shared;
 using Shared.Controls;
 using Shared.Controls.Assignments;
 using Shared.Services;
+using Shared.Utilities;
 using System.IO;
 using System.Windows;
 
@@ -98,6 +99,16 @@ namespace GGPlayer
             
             var uiLanguageCode = settingsService.GetValue("uiLanguageCode");
             Translations.SetToCulture(uiLanguageCode ?? "uk");
+
+            
+                try
+                {
+                    await WebView2Installer.InstallWebView2IfNeeded();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка установки WebView2: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
 
             var startWindow = AppHost.Services.GetRequiredService<ShellWindow>();
             startWindow.Show();

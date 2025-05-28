@@ -14,6 +14,7 @@ using Shared;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using Shared.Utilities;
 
 namespace GGManager
 {
@@ -82,6 +83,15 @@ namespace GGManager
             
             var uiLanguageCode = settingsService.GetValue("uiLanguageCode");
             Translations.SetToCulture(uiLanguageCode ?? "uk");
+
+            try
+            {
+                await WebView2Installer.InstallWebView2IfNeeded();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка установки WebView2: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
 
             var startUpForm = AppHost!.Services.GetRequiredService<MainWindow>();
             startUpForm.Show();
