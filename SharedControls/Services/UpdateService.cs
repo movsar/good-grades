@@ -5,6 +5,7 @@ using Serilog;
 using Shared.Controls;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -18,18 +19,20 @@ namespace Shared.Services
     public class UpdateService
     {
         private readonly SettingsService _settingsService;
+        string _updateFilePath = Path.Combine(Path.GetTempPath(), "good-grades-update.exe");
 
         public UpdateService(SettingsService settingsService)
         {
             _settingsService = settingsService;
         }
 
+
         public async Task UpdateMyApp(string module)
         {
             try
             {
                 Log.Information($"Before Checking for updates");
-                var latestRelease = await GitHubService.GetLatestRelease(module);
+                var latestRelease = await NetworkService.GetLatestRelease(module);
                 var latestVersion = Regex.Match(latestRelease.Name!, @"\d+\.\d+\.\d+").Value.Trim();
                 var setupAsset = latestRelease.Assets
                         .Where(a => a.Name!.ToLower().Contains("setup"))
@@ -53,11 +56,11 @@ namespace Shared.Services
                 }
 
                 // Download new version
-                var filePath = await GitHubService.DownloadUpdate(setupAsset);
-                if (!string.IsNullOrWhiteSpace(filePath))
+                await NetworkService.DownloadUpdate(setupAsset!.BrowserDownloadUrl!, _updateFilePath);
+                if (!string.IsNullOrWhiteSpace(_updateFilePath))
                 {
                     // Install new version and restart app
-                    Process.Start(filePath);
+                    Process.Start(_updateFilePath);
                     Application.Current.Shutdown();
                 }
             }
@@ -78,7 +81,7 @@ namespace Shared.Services
             {
                var skipVersion = _settingsService.GetValue("SkipVersion");
 
-                var latestRelease = await GitHubService.GetLatestRelease(module);
+                var latestRelease = await NetworkService.GetLatestRelease(module);
                 var latestVersion = Regex.Match(latestRelease.Name!, @"\d+\.\d+\.\d+").Value.Trim();
                 var setupAsset = latestRelease.Assets
                        .Where(a => a.Name!.ToLower().Contains("setup"))
@@ -111,10 +114,10 @@ namespace Shared.Services
                     return;
                 }
 
-                var filePath = await GitHubService.DownloadUpdate(setupAsset);
-                if (!string.IsNullOrWhiteSpace(filePath))
+                await NetworkService.DownloadUpdate(setupAsset!.BrowserDownloadUrl!, _updateFilePath);
+                if (!string.IsNullOrWhiteSpace(_updateFilePath))
                 {
-                    Process.Start(filePath);
+                    Process.Start(_updateFilePath);
                     Application.Current.Shutdown();
                 }
             }

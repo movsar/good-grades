@@ -45,6 +45,8 @@ namespace GGPlayer
                         services.AddSingleton<SegmentPage>();
                         services.AddSingleton<AssignmentViewerPage>();
                         services.AddSingleton<AssignmentsPage>();
+                        services.AddSingleton<ApiService>();
+                        services.AddSingleton<WebViewService>();
 
                         services.AddSingleton<MatchingAssignmentControl>();
                         services.AddSingleton<SelectingAssignmentControl>();
@@ -88,32 +90,34 @@ namespace GGPlayer
                 Shutdown();
                 return;
             }
-            AppHost.Start();
+
+            AppHost!.Start();
             base.OnStartup(e);
 
-            var apiService = new ApiService();
-            Task.Run(() => apiService.SendLogsAsync());
+            var settingsService = AppHost!.Services.GetRequiredService<SettingsService>();
+            var startWindow = AppHost!.Services.GetRequiredService<ShellWindow>();
+            var updateService = AppHost!.Services.GetRequiredService<UpdateService>();
+            var apiService = AppHost!.Services.GetRequiredService<ApiService>();
+            var webViewService = AppHost!.Services.GetRequiredService<WebViewService>();
 
-            var settingsService = AppHost.Services.GetRequiredService<SettingsService>();
             settingsService.ApplyCommandLineArguments(e.Args);
-            
+
             var uiLanguageCode = settingsService.GetValue("uiLanguageCode");
             Translations.SetToCulture(uiLanguageCode ?? "uk");
 
-            
-                try
-                {
-                    await WebView2Installer.InstallWebView2IfNeeded();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка установки WebView2: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-
-            var startWindow = AppHost.Services.GetRequiredService<ShellWindow>();
             startWindow.Show();
-            var updateService = AppHost.Services.GetRequiredService<UpdateService>();
             await updateService.AutoUpdate("player");
+
+            try
+            {
+                await webViewService.InstallWebView2IfNeeded();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка установки WebView2: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            
+            _ = Task.Run(() => apiService.SendLogsAsync());
         }
 
         protected override async void OnExit(ExitEventArgs e)

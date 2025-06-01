@@ -12,11 +12,11 @@ using Velopack.Sources;
 
 namespace Shared.Services
 {
-    public static class GitHubService
+    public static class NetworkService
     {
         private static HttpClient client = new HttpClient();
         private const string url = "https://api.github.com/repos/movsar/good-grades/releases";
-        static GitHubService()
+        static NetworkService()
         {
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -64,10 +64,9 @@ namespace Shared.Services
             }
         }
 
-        internal static async Task<string> DownloadUpdate(GithubReleaseAsset? setupAsset)
+        internal static async Task DownloadUpdate(string remotePath, string localPath)
         {
-            string updateFilePath = Path.Combine(Path.GetTempPath(), "good-grades-update.exe");
-            var response = await client.GetAsync(setupAsset!.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
+            var response = await client.GetAsync(remotePath, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
 
             using var contentStream = await response.Content.ReadAsStreamAsync();
@@ -85,18 +84,16 @@ namespace Shared.Services
 
             try
             {
-                await DownloadWithProgress(contentStream, updateFilePath, totalBytes, progress, cancellationTokenSource.Token);
+                await DownloadWithProgress(contentStream, localPath, totalBytes, progress, cancellationTokenSource.Token);
             }
             catch (OperationCanceledException)
             {
-                return string.Empty; // Download was canceled
+                return ;
             }
             finally
             {
                 downloadWindow.Close();
             }
-
-            return updateFilePath;
         }
 
         private static async Task DownloadWithProgress(Stream contentStream, string filePath, long totalBytes, IProgress<double> progress, CancellationToken cancellationToken)

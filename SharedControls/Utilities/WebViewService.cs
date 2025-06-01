@@ -1,5 +1,7 @@
-﻿using Microsoft.Win32;
+﻿using Data.Services;
+using Microsoft.Win32;
 using Shared;
+using Shared.Services;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -9,81 +11,61 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-public static class WebView2Installer
+public class WebViewService
 {
     // URL для скачивания WebView2
     private const string x86Url = "https://movsar.dev/ggassets/Microsoft.WebView2.FixedVersionRuntime.135.0.3179.98.x86.cab";
     private const string x64Url = "https://movsar.dev/ggassets/Microsoft.WebView2.FixedVersionRuntime.135.0.3179.98.x64.cab";
-   
 
-    public static async Task InstallWebView2IfNeeded()
+    private readonly SettingsService _settingsService;
+    string _tempDir = Path.Combine(Path.GetTempPath(), "WebView2Install");
+
+    public WebViewService(SettingsService settingsService)
+    {
+        _settingsService = settingsService;
+    }
+
+    public async Task InstallWebView2IfNeeded()
     {
         if (IsWebView2Installed())
+        {
             return;
+        }
 
         if (!HasInternetConnection())
         {
             MessageBox.Show("Для установки WebView2 требуется подключение к интернету.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
-
-        var cts = new CancellationTokenSource();
-        DownloadProgressWindow progressWindow = null;
+        MessageBox.Show("Будет произведено скачивание и установка дополнительных компонетов", "Good Grades", MessageBoxButton.OK, MessageBoxImage.Information);
 
         try
         {
-            await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                progressWindow = new DownloadProgressWindow(cts);
-                progressWindow.Show();
-            });
+            string extractDir = Path.Combine(_tempDir, "extracted");
+            string cabPath = Path.Combine(_tempDir, "webview2.cab");
 
-            string tempDir = Path.Combine(Path.GetTempPath(), "WebView2Install");
-            Directory.CreateDirectory(tempDir);
-
-            string cabPath = Path.Combine(tempDir, "webview2.cab");
-            string extractDir = Path.Combine(tempDir, "extracted");
+            Directory.CreateDirectory(_tempDir);
             Directory.CreateDirectory(extractDir);
 
             string downloadUrl = Environment.Is64BitOperatingSystem ? x64Url : x86Url;
 
-            await DownloadFileAsync(downloadUrl, cabPath, progressWindow, cts.Token);
-            await RunProcessAsync("expand.exe", $"-F:* \"{cabPath}\" \"{extractDir}\"", cts.Token);
+            await NetworkService.DownloadUpdate(downloadUrl, cabPath);
 
-            // Находим папку с WebView2
-            string[] subdirs = Directory.GetDirectories(extractDir);
-            if (subdirs.Length == 0)
-            {
-                MessageBox.Show("Папка WebView2 не найдена после распаковки!");
-                return;
-            }
+            await RunProcessAsync("expand.exe", $"-F:* \"{cabPath}\" \"{extractDir}\"");
 
-            string webView2Source = subdirs[0];
+            string webView2Source = Directory.GetDirectories(extractDir)[0];
             string webView2Target = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WebView2");
 
             DirectoryCopy(webView2Source, webView2Target, true);
+            _settingsService.SetValue("IsWebViewInstalled", "true");
 
-            File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WebView2", "installed.marker"), "OK");
+            Directory.Delete(_tempDir, true);
+
             MessageBox.Show("WebView2 установлен успешно!");
         }
         catch (Exception ex)
         {
             MessageBox.Show($"Ошибка установки WebView2: {ex.Message}");
-        }
-        finally
-        {
-            if (progressWindow != null)
-            {
-                await Application.Current.Dispatcher.InvokeAsync(() => progressWindow.Close());
-            }
-
-            try
-            {
-                string tempDir = Path.Combine(Path.GetTempPath(), "WebView2Install");
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, true);
-            }
-            catch { }
         }
     }
 
@@ -102,20 +84,9 @@ public static class WebView2Installer
             return false;
         }
     }
-    private static bool IsWebView2Installed()
+    private bool IsWebView2Installed()
     {
-        return IsEvergreenWebView2Installed() || IsFixedVersionRuntimePresent();
-    }
-
-    private static bool IsFixedVersionRuntimePresent()
-    {
-
-        string exeDir = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName)!;
-        string runtimeDir = Path.Combine(exeDir, "WebView2");
-
-        // Если папка WebView2 существует — считаем, что WebView2 установлен
-        return Directory.Exists(runtimeDir);
-
+        return IsEvergreenWebView2Installed() || _settingsService.GetValue("IsWebViewInstalled") == "true";
     }
 
     private static bool IsEvergreenWebView2Installed()
@@ -132,39 +103,7 @@ public static class WebView2Installer
         }
     }
 
-    private static async Task DownloadFileAsync(string url, string destinationPath, DownloadProgressWindow progressWindow, CancellationToken cancellationToken)
-    {
-        using var httpClient = new HttpClient();
-        using var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-        response.EnsureSuccessStatusCode();
-
-        var totalBytes = response.Content.Headers.ContentLength ?? -1L;
-        var canReportProgress = totalBytes != -1;
-
-        using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None);
-
-        var buffer = new byte[81920];
-        long totalRead = 0;
-        int read;
-
-        while ((read = await contentStream.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken)) > 0)
-        {
-            await fileStream.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
-            totalRead += read;
-
-            if (canReportProgress)
-            {
-                double progress = (totalRead * 100d) / totalBytes;
-                await Application.Current.Dispatcher.InvokeAsync(() => progressWindow.UpdateProgress(progress));
-            }
-
-            if (cancellationToken.IsCancellationRequested)
-                break;
-        }
-    }
-
-    private static Task RunProcessAsync(string fileName, string arguments, CancellationToken cancellationToken)
+    private static Task RunProcessAsync(string fileName, string arguments)
     {
         var tcs = new TaskCompletionSource<object>();
 
@@ -190,6 +129,7 @@ public static class WebView2Installer
             process.Dispose();
         };
 
+        var cancellationToken = new CancellationToken();
         cancellationToken.Register(() =>
         {
             try { if (!process.HasExited) process.Kill(); } catch { }
