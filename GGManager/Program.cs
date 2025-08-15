@@ -17,13 +17,7 @@ namespace GGManager
                 FontInstaller.RunFontInstallScript();
             }
 
-
-            string logPath = Path.Combine("logs", "logs.txt");
-            Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
-            .CreateLogger();
-
+            SerilogHelper.Configure();
             VelopackApp.Build().Run(LoggingInstance<Program>());
 
             var application = new App();

@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Data;
+using Serilog;
 
 namespace Shared.Services
 {
@@ -48,64 +49,51 @@ namespace Shared.Services
         }
         public async Task SendLogsAsync()
         {
-            try
-            {
-                // Проверка интернета через Ping
-                if (!await HasInternetConnectionAsync())
-                {
-                    Debug.WriteLine("Нет подключения к интернету");
-                    return;
-                }
+            //try
+            //{
+            //    if (!await HasInternetConnectionAsync())
+            //    {
+            //        return;
+            //    }
 
-                // Проверка папки с логами
-                if (!Directory.Exists("logs"))
-                {
-                    Debug.WriteLine("Папка logs не найдена");
-                    return;
-                }
+            //    if (!Directory.Exists("logs"))
+            //    {
+            //        return;
+            //    }
 
-                // Обработка файлов
-                foreach (var filePath in Directory.GetFiles("logs", "logs*.txt"))
-                {
-                    Debug.WriteLine($"Обработка файла: {filePath}");
+            //    // Выгрузка логов
+            //    foreach (var filePath in Directory.GetFiles("logs", "logs*.txt"))
+            //    {
+            //        Debug.WriteLine($"Обработка файла: {filePath}");
+            //        var content = await File.ReadAllTextAsync(filePath);
+            //        var logs = ParseLogs(content);
+            //        Debug.WriteLine($"Найдено логов: {logs.Count}");
 
-                    var content = await File.ReadAllTextAsync(filePath);
-                    var logs = ParseLogs(content);
-                    Debug.WriteLine($"Найдено логов: {logs.Count}");
+            //        //logs = logs.Where(l => l.Level > (int)LogLevel.Debug).ToList();
 
-                    logs = logs.Where(l => l.Level > (int)LogLevel.Debug).ToList();
+            //        // 4. Отправка пачками по 50
+            //        foreach (var batch in logs.Chunk(50))
+            //        {
+            //            await SendBatch(batch.ToList());
+            //        }
 
-                    // 4. Отправка пачками по 50
-                    foreach (var batch in logs.Chunk(50))
-                    {
-                        if (await SendBatch(batch.ToList()))
-                        {
-                            Debug.WriteLine($"логи успешно отправлены");
-                        }
-                        else
-                        {
-                            Debug.WriteLine("Ошибка при отправке логов");
-                            return;
-                        }
-                    }
-
-                    // Удаление файла после успешной отправки
-                    var fi = new FileInfo(filePath);
-                    var newPath = fi.Directory.FullName + "sent-" + fi.Name;
-                    File.Move(filePath, newPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Ошибка: {ex.Message}");
-            }
+            //        // Удаление файла после успешной отправки
+            //        var fi = new FileInfo(filePath);
+            //        var newPath = fi.Directory.FullName + "sent-" + fi.Name;
+            //        File.Move(filePath, newPath);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.Error(ex, "Couldn't post logs to Web Server");
+            //}
         }
         private async Task<bool> HasInternetConnectionAsync()
         {
             try
             {
                 using var ping = new Ping();
-                var reply = await ping.SendPingAsync(ApiUrl, PingTimeout);
+                var reply = await ping.SendPingAsync("movsar.dev", PingTimeout);
                 return reply.Status == IPStatus.Success;
             }
             catch
@@ -167,27 +155,19 @@ namespace Shared.Services
             return logs;
         }
 
-        private async Task<bool> SendBatch(List<LogMessage> batch)
+        private async Task SendBatch(List<LogMessage> batch)
         {
-            try
+            var options = new JsonSerializerOptions
             {
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-                };
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
 
-                var json = JsonSerializer.Serialize(batch, options);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var json = JsonSerializer.Serialize(batch, options);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(ApiUrl, content);
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-                return false;
-            }
+            var response = await _httpClient.PostAsync(ApiUrl, content);
+            response.EnsureSuccessStatusCode();
         }
     }
 }

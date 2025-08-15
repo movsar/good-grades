@@ -17,15 +17,8 @@ namespace GGPlayer
                 FontInstaller.RunFontInstallScript();
             }
 
+            SerilogHelper.Configure();
             Translations.SetToCulture("uk");
-
-            //создание лога, настройка конфигурации и его запись в файл
-            string logPath = Path.Combine("logs", "logs.txt");
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
-                .CreateLogger();
-
             VelopackApp.Build().Run(LoggingInstance<Program>());
 
             var application = new App();
