@@ -27,16 +27,15 @@ namespace GGManager
         {          
             InitializeComponent();
             DataContext = this;
-            Log.Information("MainWindow initialized");
 
-            //инициализация и подписка на события
+            // Инициализация и подписка на события
             _settingsService = settingsService;
             _updateService = new UpdateService(_settingsService);
             _contentStore = contentStore;
             _contentStore.SelectedSegmentChanged += SelectedSegmentChanged;
             _contentStore.CurrentDatabaseChanged += OnDatabaseOpened;
 
-            //открытие последней открытой базы данных при запуске
+            // Открытие последней открытой базы данных при запуске
             var lastOpenedDatabasePath = _settingsService.GetValue("lastOpenedDatabasePath");
             if (!string.IsNullOrEmpty(lastOpenedDatabasePath) && File.Exists(lastOpenedDatabasePath))
             {

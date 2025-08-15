@@ -45,7 +45,6 @@ namespace GGPlayer
                         services.AddSingleton<SegmentPage>();
                         services.AddSingleton<AssignmentViewerPage>();
                         services.AddSingleton<AssignmentsPage>();
-                        services.AddSingleton<ApiService>();
                         services.AddSingleton<WebViewService>();
 
                         services.AddSingleton<MatchingAssignmentControl>();
@@ -97,7 +96,6 @@ namespace GGPlayer
             var settingsService = AppHost!.Services.GetRequiredService<SettingsService>();
             var startWindow = AppHost!.Services.GetRequiredService<ShellWindow>();
             var updateService = AppHost!.Services.GetRequiredService<UpdateService>();
-            var apiService = AppHost!.Services.GetRequiredService<ApiService>();
             var webViewService = AppHost!.Services.GetRequiredService<WebViewService>();
 
             settingsService.ApplyCommandLineArguments(e.Args);
@@ -116,8 +114,6 @@ namespace GGPlayer
             {
                 MessageBox.Show($"Ошибка установки WebView2: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            
-            _ = Task.Run(() => apiService.SendLogsAsync());
         }
 
         protected override async void OnExit(ExitEventArgs e)

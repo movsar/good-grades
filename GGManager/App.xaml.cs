@@ -39,7 +39,6 @@ namespace GGManager
                         services.AddSingleton<StylingService>();
                         services.AddSingleton<ContentStore>();
                         services.AddSingleton<WebViewService>();
-                        services.AddSingleton<ApiService>();
                     }).Build();
         }
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
@@ -79,7 +78,6 @@ namespace GGManager
 
             var startUpForm = AppHost!.Services.GetRequiredService<MainWindow>();
             var updateService = AppHost.Services.GetRequiredService<UpdateService>();
-            var apiService = AppHost!.Services.GetRequiredService<ApiService>();
             var settingsService = AppHost.Services.GetRequiredService<SettingsService>();
             var webViewService = AppHost.Services.GetRequiredService<WebViewService>();
 
@@ -99,8 +97,6 @@ namespace GGManager
             {
                 MessageBox.Show($"Ошибка установки WebView2: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-
-            _ = Task.Run(() => apiService.SendLogsAsync());
         }
 
         protected override void OnExit(ExitEventArgs e)
