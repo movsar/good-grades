@@ -34,7 +34,7 @@ namespace Shared.Utilities
             string localLogsPath = Path.Combine("logs", "logs.txt");
 
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
+                .MinimumLevel.Warning()
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("MachineName", Environment.MachineName)
                 .Enrich.WithProperty("OSVersion", Environment.OSVersion.VersionString)
