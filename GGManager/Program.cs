@@ -16,6 +16,8 @@ namespace GGManager
             {
                 FontInstaller.RunFontInstallScript();
             }
+
+
             string logPath = Path.Combine("logs", "logs.txt");
             Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()

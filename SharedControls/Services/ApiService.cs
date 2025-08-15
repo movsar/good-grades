@@ -38,7 +38,6 @@ namespace Shared.Services
 
         public ApiService()
         {
-
             long memKb;
             GetPhysicallyInstalledSystemMemory(out memKb);
             var installedRamInGb = memKb / 1024 / 1024;

@@ -14,6 +14,7 @@ using Shared;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using Shared.Utilities;
 
 namespace GGManager
 {
@@ -37,6 +38,8 @@ namespace GGManager
                         services.AddSingleton<UpdateService>();
                         services.AddSingleton<StylingService>();
                         services.AddSingleton<ContentStore>();
+                        services.AddSingleton<WebViewService>();
+                        services.AddSingleton<ApiService>();
                     }).Build();
         }
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
@@ -71,22 +74,33 @@ namespace GGManager
                 return;
             }
 
-            AppHost.Start();
+            AppHost!.Start();
             base.OnStartup(e);
 
-            var apiService = new ApiService();
-            Task.Run(() => apiService.SendLogsAsync());
-
+            var startUpForm = AppHost!.Services.GetRequiredService<MainWindow>();
+            var updateService = AppHost.Services.GetRequiredService<UpdateService>();
+            var apiService = AppHost!.Services.GetRequiredService<ApiService>();
             var settingsService = AppHost.Services.GetRequiredService<SettingsService>();
+            var webViewService = AppHost.Services.GetRequiredService<WebViewService>();
+
             settingsService.ApplyCommandLineArguments(e.Args);
             
             var uiLanguageCode = settingsService.GetValue("uiLanguageCode");
             Translations.SetToCulture(uiLanguageCode ?? "uk");
 
-            var startUpForm = AppHost!.Services.GetRequiredService<MainWindow>();
             startUpForm.Show();
-            var updateService = AppHost.Services.GetRequiredService<UpdateService>();
             await updateService.AutoUpdate("manager");
+
+            try
+            {
+                await webViewService.InstallWebView2IfNeeded();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка установки WebView2: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            _ = Task.Run(() => apiService.SendLogsAsync());
         }
 
         protected override void OnExit(ExitEventArgs e)

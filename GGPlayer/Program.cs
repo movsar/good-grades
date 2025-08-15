@@ -16,6 +16,7 @@ namespace GGPlayer
             {
                 FontInstaller.RunFontInstallScript();
             }
+
             Translations.SetToCulture("uk");
 
             //создание лога, настройка конфигурации и его запись в файл
