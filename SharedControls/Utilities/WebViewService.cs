@@ -32,41 +32,48 @@ public class WebViewService
             return;
         }
 
-        if (!HasInternetConnection())
+        MessageBox.Show("Для корректной работы, нужно скачать и установить WebView2", "Good Grades", MessageBoxButton.OK, MessageBoxImage.Information);
+        Process.Start(new ProcessStartInfo()
         {
-            MessageBox.Show("Для установки WebView2 требуется подключение к интернету.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
-        }
-        MessageBox.Show("Будет произведено скачивание и установка дополнительных компонетов", "Good Grades", MessageBoxButton.OK, MessageBoxImage.Information);
+            UseShellExecute = true,
+            Verb = "open",
+            FileName = "https://developer.microsoft.com/en-us/microsoft-edge/webview2/consumer?form=MA13LH"
+        });
+        //if (!HasInternetConnection())
+        //{
+        //    MessageBox.Show("Для установки WebView2 требуется подключение к интернету.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+        //    return;
+        //}
+        //MessageBox.Show("Будет произведено скачивание и установка дополнительных компонетов", "Good Grades", MessageBoxButton.OK, MessageBoxImage.Information);
 
-        try
-        {
-            string extractDir = Path.Combine(_tempDir, "extracted");
-            string cabPath = Path.Combine(_tempDir, "webview2.cab");
+        //try
+        //{
+        //    string extractDir = Path.Combine(_tempDir, "extracted");
+        //    string cabPath = Path.Combine(_tempDir, "webview2.cab");
 
-            Directory.CreateDirectory(_tempDir);
-            Directory.CreateDirectory(extractDir);
+        //    Directory.CreateDirectory(_tempDir);
+        //    Directory.CreateDirectory(extractDir);
 
-            string downloadUrl = Environment.Is64BitOperatingSystem ? x64Url : x86Url;
+        //    string downloadUrl = Environment.Is64BitOperatingSystem ? x64Url : x86Url;
 
-            await NetworkService.DownloadUpdate(downloadUrl, cabPath);
+        //    await NetworkService.DownloadUpdate(downloadUrl, cabPath);
 
-            await RunProcessAsync("expand.exe", $"-F:* \"{cabPath}\" \"{extractDir}\"");
+        //    await RunProcessAsync("expand.exe", $"-F:* \"{cabPath}\" \"{extractDir}\"");
 
-            string webView2Source = Directory.GetDirectories(extractDir)[0];
-            string webView2Target = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WebView2");
+        //    string webView2Source = Directory.GetDirectories(extractDir)[0];
+        //    string webView2Target = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WebView2");
 
-            DirectoryCopy(webView2Source, webView2Target, true);
-            _settingsService.SetValue("IsWebViewInstalled", "true");
+        //    DirectoryCopy(webView2Source, webView2Target, true);
+        //    _settingsService.SetValue("IsWebViewInstalled", "true");
 
-            Directory.Delete(_tempDir, true);
+        //    Directory.Delete(_tempDir, true);
 
-            MessageBox.Show("WebView2 установлен успешно!");
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Ошибка установки WebView2: {ex.Message}");
-        }
+        //    MessageBox.Show("WebView2 установлен успешно!");
+        //}
+        //catch (Exception ex)
+        //{
+        //    MessageBox.Show($"Ошибка установки WebView2: {ex.Message}");
+        //}
     }
 
     private static bool HasInternetConnection()

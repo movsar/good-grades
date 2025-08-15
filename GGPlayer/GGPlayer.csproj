@@ -7,7 +7,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseWPF>true</UseWPF>
-		<Version>1.2.5</Version>
+		<Version>1.2.6</Version>
 		<StartupObject>GGPlayer.Program</StartupObject>
 		<Platforms>AnyCPU;x86</Platforms>
 		<ApplicationIcon>main.ico</ApplicationIcon>
